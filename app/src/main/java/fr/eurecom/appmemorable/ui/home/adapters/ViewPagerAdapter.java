@@ -1,5 +1,6 @@
 package fr.eurecom.appmemorable.ui.home.adapters;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,11 +11,17 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import fr.eurecom.appmemorable.databinding.ViewPagerItemBinding;
 import fr.eurecom.appmemorable.models.Album;
+import fr.eurecom.appmemorable.models.ContentNode;
 import fr.eurecom.appmemorable.models.TextNode;
+import fr.eurecom.appmemorable.repository.MemorableRepository;
 
 public class ViewPagerAdapter extends RecyclerView.Adapter<ViewPagerAdapter.ViewHolder> {
     private final Fragment fragment;
@@ -65,11 +72,12 @@ public class ViewPagerAdapter extends RecyclerView.Adapter<ViewPagerAdapter.View
         // Get element from your dataset at this position and replace the
         // contents of the view with that element
         ViewPagerItemBinding binding = ViewPagerItemBinding.bind(viewHolder.getView());
-
-        recyclerViewAdapter = new RecyclerViewAdapter(albums.get(position).getNodes());
+        List<ContentNode> list = albums.get(position).getNodes().entrySet().stream().sorted((o1, o2) -> -o1.getKey().compareTo(o2.getKey())).map(Map.Entry::getValue).collect(Collectors.toList());
+        recyclerViewAdapter = new RecyclerViewAdapter(list);
 
         setFloatingButton(binding.getRoot(), position);
         binding.recyclerView.setAdapter(recyclerViewAdapter);
+        binding.titleButton.setText(albums.get(position).getTitle());
 
     }
 
@@ -110,7 +118,10 @@ public class ViewPagerAdapter extends RecyclerView.Adapter<ViewPagerAdapter.View
         binding.addImage.setOnClickListener(
                 v -> Toast.makeText(fragment.getContext(), "Image Added", Toast.LENGTH_SHORT).show());
         binding.addText.setOnClickListener(
-                v -> Toast.makeText(fragment.getContext(),"Text added", Toast.LENGTH_SHORT).show());
+                v -> {
+                    //TODO: spawn dialog to insert textNode
+                    MemorableRepository.getInstance().addNodeToAlbum(new TextNode(albums.get(position).getId(), "1", "Francesco", "dynamically added to db node"), albums.get(position).getId());
+                });
     }
 
     public void setAlbums(List<Album> albums){

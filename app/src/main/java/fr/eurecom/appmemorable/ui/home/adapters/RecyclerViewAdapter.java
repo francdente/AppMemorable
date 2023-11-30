@@ -17,6 +17,7 @@ import fr.eurecom.appmemorable.databinding.TextNodeBinding;
 import fr.eurecom.appmemorable.models.ContentNode;
 import fr.eurecom.appmemorable.models.ImageNode;
 import fr.eurecom.appmemorable.models.TextNode;
+import fr.eurecom.appmemorable.repository.MemorableRepository;
 
 public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder> {
     private final List<ContentNode> nodes;
@@ -41,6 +42,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
                 TextNodeBinding textNodeBinding = TextNodeBinding.inflate(LayoutInflater.from(itemView.getContext()));
                 textNodeBinding.textView.setText(textNode.getText());
                 textNodeBinding.author.setText(textNode.getAuthor());
+                textNodeBinding.deleteButton.setOnClickListener(v1 -> MemorableRepository.getInstance().deleteNode(node.getAlbum(), node.getId()));
                 v = textNodeBinding.getRoot();
             }
             else if (node instanceof ImageNode){
@@ -49,6 +51,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
                 imageNodeBinding.imageView.setImageDrawable(AppCompatResources.getDrawable(itemView.getContext(),imageNode.getImage()));
                 imageNodeBinding.author.setText(imageNode.getAuthor());
                 imageNodeBinding.textView.setText(imageNode.getText());
+                imageNodeBinding.deleteButton.setOnClickListener(v1 -> MemorableRepository.getInstance().deleteNode("albums/"+node.getAlbum()+"/"+node.getId(), node.getId()));
                 v = imageNodeBinding.getRoot();
             }
             view.addView(v);
@@ -58,7 +61,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     /**
      * Initialize the dataset of the Adapter
      *
-     * @param nodes List<ContentNode> containing the data to populate views to be used
+     * @param nodes HashMap<String, ContentNode> containing the data to populate views to be used
      * by RecyclerView
      */
     public RecyclerViewAdapter(List<ContentNode> nodes) {

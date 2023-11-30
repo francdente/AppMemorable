@@ -4,15 +4,11 @@ import android.graphics.drawable.Drawable;
 
 import fr.eurecom.appmemorable.R;
 
-public class ImageNode implements ContentNode {
+public class ImageNode extends ContentNode {
     private String text, author;
-    private int image, day, album;
-    public ImageNode(){
-
-    }
-    public ImageNode(int album, int day, String author, String text, int image) {
-        this.album = album;
-        this.day = day;
+    private int image;
+    public ImageNode(String album, String day, String author, String text, int image) {
+        super(album, day);
         this.author = author;
         this.text = text;
         this.image = image;
@@ -43,19 +39,4 @@ public class ImageNode implements ContentNode {
         this.author = author;
     }
 
-    public int getDay() {
-        return day;
-    }
-
-    public void setDay(int day) {
-        this.day = day;
-    }
-
-    public int getAlbum() {
-        return album;
-    }
-
-    public void setAlbum(int album) {
-        this.album = album;
-    }
 }

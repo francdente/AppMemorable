@@ -1,16 +1,12 @@
 package fr.eurecom.appmemorable.models;
 
-public class TextNode implements ContentNode {
+public class TextNode extends ContentNode {
 
     private String text, author;
-    private int album, day;
 
-    public TextNode(){
 
-    }
-    public TextNode(int album, int day, String author, String text) {
-        this.album = album;
-        this.day = day;
+    public TextNode(String album, String day, String author, String text) {
+        super(album, day);
         this.author = author;
         this.text = text;
     }
@@ -28,21 +24,5 @@ public class TextNode implements ContentNode {
 
     public void setAuthor(String author) {
         this.author = author;
-    }
-
-    public int getAlbum() {
-        return album;
-    }
-
-    public void setAlbum(int album) {
-        this.album = album;
-    }
-
-    public int getDay() {
-        return day;
-    }
-
-    public void setDay(int day) {
-        this.day = day;
     }
 }

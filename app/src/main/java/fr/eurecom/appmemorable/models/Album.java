@@ -1,43 +1,50 @@
 package fr.eurecom.appmemorable.models;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class Album {
-    private List<ContentNode> nodes;
-    private int id;
+    private HashMap<String, ContentNode> nodes;
+    private String id;
     private String title;
 
     public Album(){
-        nodes = new ArrayList<>();
+        nodes = new HashMap<>();
     }
-    public Album(int id, String title, List<ContentNode> nodes) {
+    public Album(String title, HashMap<String, ContentNode> nodes) {
         this.nodes = nodes;
-        this.id = id;
         this.title = title;
     }
 
-    public List<ContentNode> getNodes() {
+    public HashMap<String, ContentNode> getNodes() {
         return nodes;
     }
 
-    public void addNode(ContentNode node) {
-        nodes.add(node);
+    public void addNode(String key, ContentNode node) {
+        nodes.put(key, node);
     }
 
-    public void setNodes(List<ContentNode> nodes) {
+    public void setNodes(HashMap<String, ContentNode> nodes) {
         this.nodes = nodes;
     }
-
-    public int getId(){
-        return id;
-    }
-
     public int getLength() {
         return nodes.size();
     }
 
     public String getTitle() {
         return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }

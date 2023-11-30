@@ -1,7 +1,6 @@
 package fr.eurecom.appmemorable.repository;
 
 import android.util.Log;
-import android.widget.ArrayAdapter;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
@@ -14,38 +13,42 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-import fr.eurecom.appmemorable.R;
 import fr.eurecom.appmemorable.models.Album;
 import fr.eurecom.appmemorable.models.AudioNode;
 import fr.eurecom.appmemorable.models.ContentNode;
 import fr.eurecom.appmemorable.models.ImageNode;
 import fr.eurecom.appmemorable.models.TextNode;
 
+
+//support classes used for serializing objects when sending and receiving data from firebase (because ContentNode is an abstract class)
 class ConcreteNode{
-    private String text, author;
-    private int image=-1, day, album;
+    private String text, author, day, album;
+    private int image=-1;
     public ConcreteNode(){
     }
     public ConcreteNode(ContentNode node){
         if (node instanceof TextNode){
             this.text = ((TextNode) node).getText();
             this.author = ((TextNode) node).getAuthor();
-            this.day = ((TextNode) node).getDay();
-            this.album = ((TextNode) node).getAlbum();
+            this.day = node.getDay();
+            this.album = node.getAlbum();
         }
         else if (node instanceof AudioNode){
             this.text = ((AudioNode) node).getText();
             this.author = ((AudioNode) node).getAuthor();
-            this.day = ((AudioNode) node).getDay();
-            this.album = ((AudioNode) node).getAlbum();
+            this.day = node.getDay();
+            this.album = node.getAlbum();
         }
         else if (node instanceof ImageNode){
             this.text = ((ImageNode) node).getText();
             this.author = ((ImageNode) node).getAuthor();
-            this.day = ((ImageNode) node).getDay();
-            this.album = ((ImageNode) node).getAlbum();
+            this.day = node.getDay();
+            this.album = node.getAlbum();
             this.image = ((ImageNode) node).getImage();
         }
 
@@ -85,57 +88,64 @@ class ConcreteNode{
         this.image = image;
     }
 
-    public int getDay() {
+    public String getDay() {
         return day;
     }
 
-    public void setDay(int day) {
+    public void setDay(String day) {
         this.day = day;
     }
 
-    public int getAlbum() {
+    public String getAlbum() {
         return album;
     }
 
-    public void setAlbum(int album) {
+    public void setAlbum(String album) {
         this.album = album;
     }
 }
 class ConcreteAlbum {
-    List<ConcreteNode> concreteNodes = new ArrayList<>();
-    private int id;
+    HashMap<String, ConcreteNode> concreteNodes = new HashMap<>();
+    private String id;
     private String title;
     public ConcreteAlbum() {
     }
     public ConcreteAlbum(Album album){
         this.id = album.getId();
         this.title = album.getTitle();
-        for (ContentNode node: album.getNodes()){
-            concreteNodes.add(new ConcreteNode(node));
+        for (Map.Entry<String, ContentNode> entry : album.getNodes().entrySet()) {
+            String key = entry.getKey();
+            ContentNode node = entry.getValue();
+            concreteNodes.put(key, new ConcreteNode(node));
         }
     }
 
     public Album IntoAlbum(){
-        List<ContentNode> nodes = new ArrayList<>();
-        for (ConcreteNode node : concreteNodes){
-            nodes.add(node.IntoContentNode());
+        HashMap<String, ContentNode> nodes = new HashMap<>();
+        for (Map.Entry<String, ConcreteNode> entry : concreteNodes.entrySet()) {
+            String key = entry.getKey();
+            ContentNode node = entry.getValue().IntoContentNode();
+            node.setId(key);
+            nodes.put(key, node);
         }
-        return new Album(this.id, this.title, nodes);
+        Album album = new Album(this.title, nodes);
+        album.setId(this.id);
+        return album;
     }
 
-    public List<ConcreteNode> getConcreteNodes() {
+    public HashMap<String, ConcreteNode> getConcreteNodes() {
         return concreteNodes;
     }
 
-    public void setConcreteNodes(List<ConcreteNode> concreteNodes) {
+    public void setConcreteNodes(HashMap<String, ConcreteNode> concreteNodes) {
         this.concreteNodes = concreteNodes;
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -175,6 +185,12 @@ public class MemorableRepository {
         //Retrieve the reference and set the listeners only the first time the function is called
         if (albumRef == null){
             albumRef = db.getReference("albums");
+            /*List<ConcreteAlbum> estart_albums = setAlbums();
+            for (ConcreteAlbum album : estart_albums){
+                String key = albumRef.push().getKey();
+                albumRef.child(key).setValue(album);
+            } this was used to initialize the database */
+
             //Initial fetch of the data + Set listener for listening to changes of data
             albumRef.addValueEventListener(new ValueEventListener() {
                 @Override
@@ -187,6 +203,7 @@ public class MemorableRepository {
                         for (DataSnapshot albumSnapshot : snapshot.getChildren()) {
                             ConcreteAlbum concreteAlbum = albumSnapshot.getValue(ConcreteAlbum.class);
                             if (concreteAlbum != null) {
+                                concreteAlbum.setId(albumSnapshot.getKey());
                                 newAlbums.add(concreteAlbum.IntoAlbum());
                             }
                         }
@@ -204,35 +221,18 @@ public class MemorableRepository {
         }
         return albums;
     }
-    private static MutableLiveData<List<Album>> setAlbums(){
+
+    private static List<ConcreteAlbum> setAlbums(){
         ArrayList<Album> albums = new ArrayList<>();
         //Hard-coded initilization data
-        ContentNode node1 = new TextNode(1,1,"Francesco","textnode1");
-        ContentNode node2 = new TextNode(1,1, "Francesco", "textnode2");
-        ContentNode node3 = new TextNode(1,1, "Francesco", "textnode3");
-        ContentNode node4 = new TextNode(1,1, "Francesco", "textnode4");
-        ContentNode node5 = new ImageNode(1, 1,"Francesco", "landscape1", R.drawable.image1);
-        ContentNode node6 = new ImageNode(1, 1,"Francesco", "landscape2", R.drawable.image2);
-        ContentNode node7 = new ImageNode(1, 1,"Francesco", "landscape3", R.drawable.image3);
-        ArrayList<ContentNode> contentNodes1 = new ArrayList<ContentNode>();
-        ArrayList<ContentNode> contentNodes2 = new ArrayList<ContentNode>();
-        ArrayList<ContentNode> contentNodes3 = new ArrayList<ContentNode>();
-        contentNodes1.add(node1);
-        contentNodes1.add(node2);
-        contentNodes1.add(node5);
-        contentNodes2.add(node3);
-        contentNodes2.add(node6);
-        contentNodes3.add(node4);
-        contentNodes3.add(node7);
-        Album album1 = new Album(1, "TODAY", contentNodes1);
-        Album album2 = new Album(2, "Album 2", contentNodes2);
-        Album album3 = new Album(3, "Album 3", contentNodes3);
-        albums.add(album1);
-        albums.add(album2);
-        albums.add(album3);
-        MutableLiveData<List<Album>> data = new MutableLiveData<>();
-        data.setValue(albums);
-        return data;
+        albums.add(new Album( "First Album", new HashMap<>()));
+        albums.add(new Album( "Second Album", new HashMap<>()));
+        albums.add(new Album( "Third Album", new HashMap<>()));
+        albums.add(new Album( "Fourth Album", new HashMap<>()));
+        albums.add(new Album( "Fifth Album", new HashMap<>()));
+        albums.add(new Album( "Sixth Album", new HashMap<>()));;
+        // add empyt concreteNodes
+        return albums.stream().map(ConcreteAlbum::new).collect(Collectors.toList());
     }
 
 
@@ -254,5 +254,39 @@ public class MemorableRepository {
 
     public void setAlbums(MutableLiveData<List<Album>> albums) {
         this.albums = albums;
+    }
+
+    public void addNodeToAlbum(ContentNode node, String albumKey) {
+        Log.e("MemorableRepository", "adding node to album"+albumKey);
+        DatabaseReference nodes = db.getReference("albums/"+albumKey+"/concreteNodes");
+        String key = nodes.push().getKey();
+        nodes.child(key).setValue(new ConcreteNode(node));
+    }
+    /**
+    Update the node in the database, it detects the node using it's unique identifier generated by the db.
+
+     The node is updated using the content of the ContentNode object passed as parameter
+     @Params: ContentNode node - the updated version of the node
+     @Params: String key - the unique identifier of the node to be updated
+     */
+    public void updateNode(ContentNode node, String key){
+        DatabaseReference nodes = db.getReference("albums/"+node.getAlbum()+"/concreteNodes");
+        nodes.child(key).setValue(new ConcreteNode(node));
+    }
+
+    /**
+     * Delete the node in the database, it detects the node using it's unique identifier generated by the db.
+     * @Params: String key
+     */
+    public void deleteNode(String albumId, String nodeId){
+        DatabaseReference node = db.getReference("albums/"+albumId+"/concreteNodes/"+nodeId);
+        Log.e("MemorableRepository", node.toString());
+        node.removeValue();
+    }
+
+    public void addAlbum(Album album){
+        DatabaseReference nodes = db.getReference("albums");
+        String key = nodes.push().getKey();
+        nodes.child(key).setValue(new ConcreteAlbum(album));
     }
 }

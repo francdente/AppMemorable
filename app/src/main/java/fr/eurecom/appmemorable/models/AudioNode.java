@@ -3,44 +3,14 @@ package fr.eurecom.appmemorable.models;
 import android.content.Context;
 import android.view.View;
 
-public class AudioNode implements ContentNode {
-
-    int album, day, image;
+public class AudioNode extends ContentNode {
     String author, text;
-    public AudioNode(){
-
-    }
-
-    public AudioNode(int album, int day, String author, String text) {
-        this.album = album;
-        this.day = day;
+    public AudioNode(String album, String day, String author, String text) {
+        super(album, day);
         this.author = author;
         this.text = text;
     }
 
-    public int getAlbum() {
-        return album;
-    }
-
-    public void setAlbum(int album) {
-        this.album = album;
-    }
-
-    public int getDay() {
-        return day;
-    }
-
-    public void setDay(int day) {
-        this.day = day;
-    }
-
-    public int getImage() {
-        return image;
-    }
-
-    public void setImage(int image) {
-        this.image = image;
-    }
 
     public String getAuthor() {
         return author;
