@@ -11,12 +11,11 @@ public class AudioNode implements ContentNode {
 
     }
 
-    public AudioNode(int album, int day, String author, String text, int image) {
+    public AudioNode(int album, int day, String author, String text) {
         this.album = album;
         this.day = day;
         this.author = author;
         this.text = text;
-        this.image = image;
     }
 
     public int getAlbum() {

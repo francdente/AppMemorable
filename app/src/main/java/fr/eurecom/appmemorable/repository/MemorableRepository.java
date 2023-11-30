@@ -18,16 +18,144 @@ import java.util.List;
 
 import fr.eurecom.appmemorable.R;
 import fr.eurecom.appmemorable.models.Album;
+import fr.eurecom.appmemorable.models.AudioNode;
 import fr.eurecom.appmemorable.models.ContentNode;
 import fr.eurecom.appmemorable.models.ImageNode;
 import fr.eurecom.appmemorable.models.TextNode;
 
 //Singleton pattern to simulate database access
+class ConcreteNode{
+    private String text, author;
+    private int image=-1, day, album;
+    public ConcreteNode(){
+    }
+    public ConcreteNode(ContentNode node){
+        if (node instanceof TextNode){
+            this.text = ((TextNode) node).getText();
+            this.author = ((TextNode) node).getAuthor();
+            this.day = ((TextNode) node).getDay();
+            this.album = ((TextNode) node).getAlbum();
+        }
+        else if (node instanceof AudioNode){
+            this.text = ((AudioNode) node).getText();
+            this.author = ((AudioNode) node).getAuthor();
+            this.day = ((AudioNode) node).getDay();
+            this.album = ((AudioNode) node).getAlbum();
+        }
+        else if (node instanceof ImageNode){
+            this.text = ((ImageNode) node).getText();
+            this.author = ((ImageNode) node).getAuthor();
+            this.day = ((ImageNode) node).getDay();
+            this.album = ((ImageNode) node).getAlbum();
+            this.image = ((ImageNode) node).getImage();
+        }
+
+    }
+
+
+    public ContentNode IntoContentNode() {
+        if (image == -1){
+            return new TextNode(album, day, author, text);
+        }
+        else {
+            return new ImageNode(album, day, author, text, image);
+        }
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public int getImage() {
+        return image;
+    }
+
+    public void setImage(int image) {
+        this.image = image;
+    }
+
+    public int getDay() {
+        return day;
+    }
+
+    public void setDay(int day) {
+        this.day = day;
+    }
+
+    public int getAlbum() {
+        return album;
+    }
+
+    public void setAlbum(int album) {
+        this.album = album;
+    }
+}
+class ConcreteAlbum {
+    List<ConcreteNode> concreteNodes = new ArrayList<>();
+    private int id;
+    private String title;
+    public ConcreteAlbum() {
+    }
+    public ConcreteAlbum(Album album){
+        this.id = album.getId();
+        this.title = album.getTitle();
+        for (ContentNode node: album.getNodes()){
+            concreteNodes.add(new ConcreteNode(node));
+        }
+    }
+
+    public Album IntoAlbum(){
+        List<ContentNode> nodes = new ArrayList<>();
+        for (ConcreteNode node : concreteNodes){
+            nodes.add(node.IntoContentNode());
+        }
+        return new Album(this.id, this.title, nodes);
+    }
+
+    public List<ConcreteNode> getConcreteNodes() {
+        return concreteNodes;
+    }
+
+    public void setConcreteNodes(List<ConcreteNode> concreteNodes) {
+        this.concreteNodes = concreteNodes;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+}
+
 public class MemorableRepository {
+
     private static MemorableRepository instance;
     private FirebaseDatabase db;
     private DatabaseReference albumRef;
     private MutableLiveData<List<Album>> albums;
+
     public static MemorableRepository getInstance(){
         if (instance == null){
             instance = new MemorableRepository();
@@ -43,9 +171,9 @@ public class MemorableRepository {
                     if (snapshot.exists() && snapshot.hasChildren()) {
                         // Iterate through the children and add them to the albums list
                         for (DataSnapshot albumSnapshot : snapshot.getChildren()) {
-                            Album album = albumSnapshot.getValue(Album.class);
-                            if (album != null) {
-                                albums.add(album);
+                            ConcreteAlbum concreteAlbum = albumSnapshot.getValue(ConcreteAlbum.class);
+                            if (concreteAlbum != null) {
+                                albums.add(concreteAlbum.IntoAlbum());
                             }
                         }
 
@@ -59,7 +187,12 @@ public class MemorableRepository {
 
                 }
             });
-            instance.getAlbumRef().setValue(instance.getAlbums().getValue());
+            List<Album> albums = instance.getAlbums().getValue();
+            List<ConcreteAlbum> concreteAlbums = new ArrayList<>();
+            for (Album a : albums){
+                concreteAlbums.add(new ConcreteAlbum(a));
+            }
+            instance.getAlbumRef().setValue(concreteAlbums);
         }
 
         return instance;

@@ -1,22 +1,23 @@
 package fr.eurecom.appmemorable.models;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Album {
-    private ArrayList<ContentNode> nodes;
+    private List<ContentNode> nodes;
     private int id;
     private String title;
 
     public Album(){
         nodes = new ArrayList<>();
     }
-    public Album(int id, String title, ArrayList<ContentNode> nodes) {
+    public Album(int id, String title, List<ContentNode> nodes) {
         this.nodes = nodes;
         this.id = id;
         this.title = title;
     }
 
-    public ArrayList<ContentNode> getNodes() {
+    public List<ContentNode> getNodes() {
         return nodes;
     }
 
@@ -24,7 +25,7 @@ public class Album {
         nodes.add(node);
     }
 
-    public void setNodes(ArrayList<ContentNode> nodes) {
+    public void setNodes(List<ContentNode> nodes) {
         this.nodes = nodes;
     }
 
