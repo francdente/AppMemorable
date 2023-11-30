@@ -23,7 +23,6 @@ import fr.eurecom.appmemorable.models.ContentNode;
 import fr.eurecom.appmemorable.models.ImageNode;
 import fr.eurecom.appmemorable.models.TextNode;
 
-//Singleton pattern to simulate database access
 class ConcreteNode{
     private String text, author;
     private int image=-1, day, album;
@@ -159,40 +158,10 @@ public class MemorableRepository {
     public static MemorableRepository getInstance(){
         if (instance == null){
             instance = new MemorableRepository();
-            instance.setAlbums(setAlbums());
             instance.setDb(FirebaseDatabase.getInstance("https://appmemorable-bb5f9-default-rtdb.firebaseio.com/"));
-            instance.setAlbumRef(instance.getDb().getReference("albums"));
-            instance.getAlbumRef().addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    // Clear the existing albums before updating with new data
-                    List<Album> albums = new ArrayList<>();
-                    // Check if snapshot exists and has children
-                    if (snapshot.exists() && snapshot.hasChildren()) {
-                        // Iterate through the children and add them to the albums list
-                        for (DataSnapshot albumSnapshot : snapshot.getChildren()) {
-                            ConcreteAlbum concreteAlbum = albumSnapshot.getValue(ConcreteAlbum.class);
-                            if (concreteAlbum != null) {
-                                albums.add(concreteAlbum.IntoAlbum());
-                            }
-                        }
-
-                        // Notify observers of the change in data
-                        instance.getMutableAlbums().postValue(albums);
-                    }
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {
-
-                }
-            });
-            List<Album> albums = instance.getAlbums().getValue();
-            List<ConcreteAlbum> concreteAlbums = new ArrayList<>();
-            for (Album a : albums){
-                concreteAlbums.add(new ConcreteAlbum(a));
-            }
-            instance.getAlbumRef().setValue(concreteAlbums);
+            MutableLiveData<List<Album>> data = new MutableLiveData<>();
+            data.setValue(new ArrayList<>());
+            instance.setAlbums(data);
         }
 
         return instance;
@@ -202,11 +171,37 @@ public class MemorableRepository {
         return albums;
     }
 
-    public void addAlbumEventListener(ValueEventListener listener){
-        albumRef.addValueEventListener(listener);
-    }
-
     public LiveData<List<Album>> getAlbums(){
+        //Retrieve the reference and set the listeners only the first time the function is called
+        if (albumRef == null){
+            albumRef = db.getReference("albums");
+            //Initial fetch of the data + Set listener for listening to changes of data
+            albumRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    // Clear the existing albums before updating with new data
+                    List<Album> newAlbums = new ArrayList<>();
+                    // Check if snapshot exists and has children
+                    if (snapshot.exists() && snapshot.hasChildren()) {
+                        // Iterate through the children and add them to the albums list
+                        for (DataSnapshot albumSnapshot : snapshot.getChildren()) {
+                            ConcreteAlbum concreteAlbum = albumSnapshot.getValue(ConcreteAlbum.class);
+                            if (concreteAlbum != null) {
+                                newAlbums.add(concreteAlbum.IntoAlbum());
+                            }
+                        }
+
+                        // Notify observers of the change in data
+                        albums.postValue(newAlbums);
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
+        }
         return albums;
     }
     private static MutableLiveData<List<Album>> setAlbums(){

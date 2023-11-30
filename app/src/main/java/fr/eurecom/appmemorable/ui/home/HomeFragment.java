@@ -21,14 +21,14 @@ import fr.eurecom.appmemorable.repository.MemorableRepository;
 import fr.eurecom.appmemorable.ui.home.adapters.ViewPagerAdapter;
 
 public class HomeFragment extends Fragment {
-    MemorableRepository repository = MemorableRepository.getInstance();
+    MemorableRepository repository;
     private ViewPagerAdapter pagerAdapter;
     private FragmentHomeBinding binding;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.e("HomeFragment", "called on create view");
         //Initialize data from viewModel and instantiate pagerAdapter
-
+        repository = MemorableRepository.getInstance();
         pagerAdapter = new ViewPagerAdapter(this, repository.getAlbums().getValue());
         repository.getAlbums().observe(getViewLifecycleOwner(), new Observer<List<Album>>() {
             @Override
