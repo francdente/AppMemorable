@@ -5,14 +5,15 @@ import android.graphics.drawable.Drawable;
 import fr.eurecom.appmemorable.R;
 
 public class ImageNode extends ContentNode {
-    private String text, author;
+    private String text;
     private int image;
-    public ImageNode(String album, String day, String author, String text, int image) {
-        super(album, day);
-        this.author = author;
+    public ImageNode(String album, String day, User user, String text, int image) {
+        super(album, day, user);
         this.text = text;
         this.image = image;
     }
+
+
 
 
     public String getText() {
@@ -31,12 +32,5 @@ public class ImageNode extends ContentNode {
         this.image = image;
     }
 
-    public String getAuthor() {
-        return author;
-    }
-
-    public void setAuthor(String author) {
-        this.author = author;
-    }
 
 }

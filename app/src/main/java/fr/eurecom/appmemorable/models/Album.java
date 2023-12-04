@@ -1,13 +1,10 @@
 package fr.eurecom.appmemorable.models;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 public class Album {
     private HashMap<String, ContentNode> nodes;
-    private String id;
-    private String title;
+    private String id, title;
 
     public Album(){
         nodes = new HashMap<>();
@@ -47,4 +44,5 @@ public class Album {
     public void setId(String id) {
         this.id = id;
     }
+
 }

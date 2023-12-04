@@ -4,48 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <!--floating buttons for adding content-->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/add_fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="60dp"
-        android:contentDescription="a"
-        android:src="@drawable/add_svgrepo_com"
-        app:fabSize="normal"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/add_image"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp"
-        android:src="@drawable/image_svgrepo_com"
-        app:fabSize="normal"
-        app:layout_constraintBottom_toTopOf="@+id/add_fab"
-        app:layout_constraintEnd_toEndOf="@+id/add_fab"
-        app:layout_constraintStart_toStartOf="@+id/add_fab" />
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/add_audio"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp"
-        android:src="@drawable/microphone_alt_1_svgrepo_com"
-        app:fabSize="normal"
-        app:layout_constraintBottom_toTopOf="@+id/add_image"
-        app:layout_constraintEnd_toEndOf="@+id/add_image"
-        app:layout_constraintStart_toStartOf="@+id/add_image" />
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/add_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp"
-        app:fabSize="normal"
-        android:src="@drawable/text_svgrepo_com"
-        app:layout_constraintBottom_toTopOf="@+id/add_audio"
-        app:layout_constraintEnd_toEndOf="@+id/add_audio"
-        app:layout_constraintStart_toStartOf="@+id/add_audio" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"

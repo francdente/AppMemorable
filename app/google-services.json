@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "593053718535",
+    "firebase_url": "https://appmemorable-bb5f9-default-rtdb.firebaseio.com",
     "project_id": "appmemorable-bb5f9",
     "storage_bucket": "appmemorable-bb5f9.appspot.com"
   },
@@ -12,7 +13,20 @@
           "package_name": "fr.eurecom.appmemorable"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "593053718535-du1egm73jht6gmfacq7h6ac4pn06gj21.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "fr.eurecom.appmemorable",
+            "certificate_hash": "985a15ead1c40081048d1a0fb0f6f7e906c74c7a"
+          }
+        },
+        {
+          "client_id": "593053718535-jdtpa0fr3vp2j3lj5n5cr51ea91u4e57.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBeC3iE13M_F6XQJ3pw5YgzVuu3F4OSdJg"
@@ -20,7 +34,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "593053718535-jdtpa0fr3vp2j3lj5n5cr51ea91u4e57.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

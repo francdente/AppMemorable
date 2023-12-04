@@ -8,6 +8,9 @@ import android.widget.LinearLayout;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 import java.util.List;
 
 import fr.eurecom.appmemorable.R;
@@ -20,8 +23,18 @@ import fr.eurecom.appmemorable.models.TextNode;
 import fr.eurecom.appmemorable.repository.MemorableRepository;
 
 public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder> {
-    private final List<ContentNode> nodes;
+    private List<ContentNode> nodes;
     private RecyclerItemBinding binding;
+
+    public List<ContentNode> getNodes() {
+        return nodes;
+    }
+    public void setNodes(List<ContentNode> nodes) {
+        this.nodes = nodes;
+        notifyDataSetChanged();
+    }
+
+
 
     /**
      * Provide a reference to the type of views that you are using
@@ -41,20 +54,26 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
                 TextNode textNode = (TextNode) node;
                 TextNodeBinding textNodeBinding = TextNodeBinding.inflate(LayoutInflater.from(itemView.getContext()));
                 textNodeBinding.textView.setText(textNode.getText());
-                textNodeBinding.author.setText(textNode.getAuthor());
-                textNodeBinding.deleteButton.setOnClickListener(v1 -> MemorableRepository.getInstance().deleteNode(node.getAlbum(), node.getId()));
+                textNodeBinding.author.setText(textNode.getUser().getName());
+                //TODO: add a dialog to ask for confirmation
+                textNodeBinding.deleteButton.setOnClickListener(v1 -> this.deleteNode(node.getAlbum(), node.getId()));
                 v = textNodeBinding.getRoot();
             }
             else if (node instanceof ImageNode){
                 ImageNode imageNode = (ImageNode) node;
                 ImageNodeBinding imageNodeBinding = ImageNodeBinding.inflate(LayoutInflater.from(itemView.getContext()));
                 imageNodeBinding.imageView.setImageDrawable(AppCompatResources.getDrawable(itemView.getContext(),imageNode.getImage()));
-                imageNodeBinding.author.setText(imageNode.getAuthor());
+                imageNodeBinding.author.setText(imageNode.getUser().getName());
                 imageNodeBinding.textView.setText(imageNode.getText());
-                imageNodeBinding.deleteButton.setOnClickListener(v1 -> MemorableRepository.getInstance().deleteNode("albums/"+node.getAlbum()+"/"+node.getId(), node.getId()));
+                imageNodeBinding.deleteButton.setOnClickListener(v1 -> this.deleteNode("albums/"+node.getAlbum()+"/"+node.getId(), node.getId()));
                 v = imageNodeBinding.getRoot();
             }
             view.addView(v);
+        }
+
+        private void deleteNode(String albumId, String nodeId){
+            DatabaseReference node = FirebaseDatabase.getInstance().getReference("albumNodes/"+albumId+"/"+nodeId);
+            node.removeValue();
         }
     }
 
