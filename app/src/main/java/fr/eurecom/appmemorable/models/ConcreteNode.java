@@ -10,7 +10,7 @@ import fr.eurecom.appmemorable.models.User;
 public class ConcreteNode {
     private String text, day, album;
     private User user;
-    private int image = -1;
+    private String imageUrl = null;
 
     public ConcreteNode() {
     }
@@ -31,17 +31,17 @@ public class ConcreteNode {
             this.user = node.getUser();
             this.day = node.getDay();
             this.album = node.getAlbum();
-            this.image = ((ImageNode) node).getImage();
+            this.imageUrl = ((ImageNode) node).getImage();
         }
 
     }
 
 
     public ContentNode IntoContentNode() {
-        if (image == -1) {
+        if (imageUrl == null) {
             return new TextNode(album, day, user, text);
         } else {
-            return new ImageNode(album, day, user, text, image);
+            return new ImageNode(album, day, user, text, imageUrl);
         }
     }
 
@@ -61,12 +61,12 @@ public class ConcreteNode {
         this.user = user;
     }
 
-    public int getImage() {
-        return image;
+    public String getImage() {
+        return imageUrl;
     }
 
-    public void setImage(int image) {
-        this.image = image;
+    public void setImage(String image) {
+        this.imageUrl = image;
     }
 
     public String getDay() {

@@ -6,11 +6,11 @@ import fr.eurecom.appmemorable.R;
 
 public class ImageNode extends ContentNode {
     private String text;
-    private int image;
-    public ImageNode(String album, String day, User user, String text, int image) {
+    private String imageUrl;
+    public ImageNode(String album, String day, User user, String text, String imageUrl) {
         super(album, day, user);
         this.text = text;
-        this.image = image;
+        this.imageUrl = imageUrl;
     }
 
 
@@ -24,12 +24,12 @@ public class ImageNode extends ContentNode {
         this.text = text;
     }
 
-    public int getImage() {
-        return image;
+    public String getImage() {
+        return imageUrl;
     }
 
-    public void setImage(int image) {
-        this.image = image;
+    public void setImage(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
 

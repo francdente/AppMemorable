@@ -45,7 +45,7 @@ public class NodeListViewAdapter extends ArrayAdapter<ContentNode> {
         else if (node instanceof ImageNode){
             ImageNode imageNode = (ImageNode) node;
             ImageNodeBinding imageNodeBinding = ImageNodeBinding.inflate(LayoutInflater.from(getContext()));
-            imageNodeBinding.imageView.setImageDrawable(AppCompatResources.getDrawable(getContext(),imageNode.getImage()));
+            //imageNodeBinding.imageView.setImageDrawable(AppCompatResources.getDrawable(getContext(),imageNode.getImage()));
             imageNodeBinding.author.setText(imageNode.getUser().getName());
             imageNodeBinding.textView.setText(imageNode.getText());
             imageNodeBinding.deleteButton.setOnClickListener(v1 -> this.deleteNode("albums/"+node.getAlbum()+"/"+node.getId(), node.getId()));
