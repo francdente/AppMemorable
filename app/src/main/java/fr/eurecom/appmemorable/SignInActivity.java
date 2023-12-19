@@ -1,10 +1,8 @@
 package fr.eurecom.appmemorable;
 
-import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -19,7 +17,6 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import fr.eurecom.appmemorable.databinding.ActivitySignInBinding;
 import fr.eurecom.appmemorable.models.User;
-import fr.eurecom.appmemorable.repository.MemorableRepository;
 
 public class SignInActivity extends AppCompatActivity {
 
@@ -57,6 +54,7 @@ public class SignInActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getSupportActionBar().hide();
         ActivitySignInBinding binding = ActivitySignInBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
@@ -67,12 +65,14 @@ public class SignInActivity extends AppCompatActivity {
             String password = ((TextView)findViewById(R.id.password)).getText().toString();
             String username = ((TextView)findViewById(R.id.username)).getText().toString();
             this.signUp(email, password, username);
+            binding.progressBar.setVisibility(View.VISIBLE);
         });
 
         binding.signIn.setOnClickListener(v -> {
             String email = ((TextView)findViewById(R.id.email)).getText().toString();
             String password = ((TextView)findViewById(R.id.password)).getText().toString();
             this.signIn(email, password);
+            binding.progressBar.setVisibility(View.VISIBLE);
         });
 
         binding.toggleLoginMode.setOnClickListener(v -> {
@@ -91,11 +91,11 @@ public class SignInActivity extends AppCompatActivity {
 
         isSignedIn.observe(this, isSignedIn -> {
             if (isSignedIn) {
+                binding.progressBar.setVisibility(View.GONE);
                 Intent intent = new Intent(this, MainActivity.class);
                 startActivity(intent);
                 finish();
             } else {
-
             }
         });
     }

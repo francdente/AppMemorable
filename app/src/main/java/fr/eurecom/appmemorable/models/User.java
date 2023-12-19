@@ -17,7 +17,7 @@ public class User {
     @NonNull
     @Override
     public String toString() {
-        return name;
+        return email;
     }
 
     public String getEmail() {
