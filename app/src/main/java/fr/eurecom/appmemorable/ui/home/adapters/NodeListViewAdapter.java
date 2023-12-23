@@ -13,6 +13,8 @@ import androidx.appcompat.content.res.AppCompatResources;
 
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.List;
 
@@ -45,6 +47,7 @@ public class NodeListViewAdapter extends ArrayAdapter<ContentNode> {
         else if (node instanceof ImageNode){
             ImageNode imageNode = (ImageNode) node;
             ImageNodeBinding imageNodeBinding = ImageNodeBinding.inflate(LayoutInflater.from(getContext()));
+            StorageReference storageRef = FirebaseStorage.getInstance().getReference().child(""+ imageNode.getAlbum().toString() +"/"+ imageNode.getImage());
             //imageNodeBinding.imageView.setImageDrawable(AppCompatResources.getDrawable(getContext(),imageNode.getImage()));
             imageNodeBinding.author.setText(imageNode.getUser().getName());
             imageNodeBinding.textView.setText(imageNode.getText());

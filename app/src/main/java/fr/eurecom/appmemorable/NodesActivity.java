@@ -58,6 +58,7 @@ public class NodesActivity extends AppCompatActivity {
 
     LinearProgressIndicator progress = null;
     Uri image;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -76,24 +77,40 @@ public class NodesActivity extends AppCompatActivity {
                     if(result.getData() != null){
                         image = result.getData().getData();
                         StorageReference storageRef = FirebaseStorage.getInstance("gs://appmemorable-bb5f9.appspot.com").getReference();
-                        StorageReference imageRef = storageRef.child(""+albumKey+"/"+ UUID.randomUUID().toString());
+                        String randomUrl = UUID.randomUUID().toString();
+                        StorageReference imageRef = storageRef.child(""+albumKey+"/"+randomUrl);
                         imageRef.putFile(image).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                             @Override
                             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                Dialog dialog = new Dialog(NodesActivity.this);
+                                dialog.setContentView(R.layout.add_node);
+                                dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                                dialog.setCancelable(false);
+                                dialog.getWindow().getAttributes().windowAnimations = R.style.dialog_animation;
+                                dialog.findViewById(R.id.btnInsert).setOnClickListener(v1 -> {
+                                    String text = ((TextView) dialog.findViewById(R.id.editText)).getText().toString();
+                                    NodesActivity.this.addNodeToAlbum(new ImageNode(albumKey, "1", null, text, randomUrl), albumKey);
+                                    dialog.dismiss();
+
+                                });
+                                dialog.findViewById(R.id.btnCancel).setOnClickListener(v1 -> {
+                                    NodesActivity.this.addNodeToAlbum(new ImageNode(albumKey, "1", null, null, randomUrl), albumKey);
+                                    dialog.dismiss();
+                                });
+                                dialog.show();
+
                                 Toast.makeText(NodesActivity.this, "Image uploaded successfully", Toast.LENGTH_SHORT).show();
                             }
                         }).addOnFailureListener(new OnFailureListener() {
                             @Override
                             public void onFailure(@NonNull Exception e) {
+
                                 Toast.makeText(NodesActivity.this, "Something went wrong", Toast.LENGTH_SHORT).show();
                             }
                         });
 
-                        Toast.makeText(NodesActivity.this, "Image Added", Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(NodesActivity.this, "Image Added", Toast.LENGTH_SHORT).show();
                     }
-                }
-                else {
-                    Toast.makeText(NodesActivity.this, "Please select an image", Toast.LENGTH_SHORT).show();
                 }
 
             }
@@ -167,23 +184,10 @@ public class NodesActivity extends AppCompatActivity {
 
                     mIsAllFabsVisible = false;
 
-                    Dialog dialog = new Dialog(this);
-                    dialog.setContentView(R.layout.add_node);
-                    dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                    dialog.setCancelable(false);
-                    dialog.getWindow().getAttributes().windowAnimations = R.style.dialog_animation;
-                    dialog.findViewById(R.id.btnInsert).setOnClickListener(v1 -> {
-                        String text = ((TextView)dialog.findViewById(R.id.editText)).getText().toString();
-                        this.addNodeToAlbum(new ImageNode(albumKey, "1", null, text, null), albumKey);
-                        dialog.dismiss();
-                    });
-                    dialog.findViewById(R.id.btnCancel).setOnClickListener(v1 -> dialog.dismiss());
-                    dialog.show();
-
-
                     Intent intent = new Intent(Intent.ACTION_PICK);
                     intent.setType("image/*");
                     activityResultLauncher.launch(intent);
+
 
                 });
         binding.addText.setOnClickListener(
