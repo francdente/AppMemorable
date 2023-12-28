@@ -126,7 +126,7 @@ public class NodesActivity extends AppCompatActivity {
                         if (concreteNode != null) {
                             ContentNode node = concreteNode.IntoContentNode();
                             node.setId(nodeSnapshot.getKey());
-                            Log.e("NodesActivity", "onDataChange: "+((TextNode)node).getText());
+                            Log.e("NodesActivity", "onDataChange: "+ node.getAlbum());
                             nodes.add(node);
                         }
                     }

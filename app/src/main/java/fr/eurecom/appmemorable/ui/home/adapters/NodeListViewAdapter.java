@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
 
+import com.bumptech.glide.Glide;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
@@ -18,6 +19,7 @@ import com.google.firebase.storage.StorageReference;
 
 import java.util.List;
 
+import fr.eurecom.appmemorable.R;
 import fr.eurecom.appmemorable.databinding.ImageNodeBinding;
 import fr.eurecom.appmemorable.databinding.TextNodeBinding;
 import fr.eurecom.appmemorable.models.ContentNode;
@@ -34,7 +36,7 @@ public class NodeListViewAdapter extends ArrayAdapter<ContentNode> {
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
         ContentNode node = getItem(position);
-        Log.e("NodeListViewAdapter", "getView: "+((TextNode) node).getText());
+        Log.e("NodeListViewAdapter", "getView: "+ node.getAlbum());
         if (node instanceof TextNode){
             TextNode textNode = (TextNode) node;
             TextNodeBinding textNodeBinding = TextNodeBinding.inflate(LayoutInflater.from(getContext()));
@@ -47,7 +49,14 @@ public class NodeListViewAdapter extends ArrayAdapter<ContentNode> {
         else if (node instanceof ImageNode){
             ImageNode imageNode = (ImageNode) node;
             ImageNodeBinding imageNodeBinding = ImageNodeBinding.inflate(LayoutInflater.from(getContext()));
-            StorageReference storageRef = FirebaseStorage.getInstance().getReference().child(""+ imageNode.getAlbum().toString() +"/"+ imageNode.getImage());
+
+            StorageReference storageRef = FirebaseStorage.getInstance().getReference().child(""+ imageNode.getAlbum() +"/"+ imageNode.getImage());
+            //Log.e("ImageLoading", "StorageRef path: " + storageRef.getPath());
+            Glide
+                    .with(this.getContext())
+                    .load(storageRef)
+                    .into(imageNodeBinding.imageView);
+
             //imageNodeBinding.imageView.setImageDrawable(AppCompatResources.getDrawable(getContext(),imageNode.getImage()));
             imageNodeBinding.author.setText(imageNode.getUser().getName());
             imageNodeBinding.textView.setText(imageNode.getText());
