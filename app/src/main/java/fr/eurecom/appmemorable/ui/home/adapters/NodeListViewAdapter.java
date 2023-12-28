@@ -42,8 +42,9 @@ public class NodeListViewAdapter extends ArrayAdapter<ContentNode> {
             TextNodeBinding textNodeBinding = TextNodeBinding.inflate(LayoutInflater.from(getContext()));
             textNodeBinding.textView.setText(textNode.getText());
             textNodeBinding.author.setText(textNode.getUser().getName());
+            textNodeBinding.messageDate.setText(textNode.getMessageDate());
             //TODO: add a dialog to ask for confirmation
-            textNodeBinding.deleteButton.setOnClickListener(v1 -> this.deleteNode(node.getAlbum(), node.getId()));
+            //textNodeBinding.deleteButton.setOnClickListener(v1 -> this.deleteNode(node.getAlbum(), node.getId()));
             convertView = textNodeBinding.getRoot();
         }
         else if (node instanceof ImageNode){
@@ -68,7 +69,7 @@ public class NodeListViewAdapter extends ArrayAdapter<ContentNode> {
     }
 
     private void deleteNode(String albumId, String nodeId){
-        DatabaseReference node = FirebaseDatabase.getInstance().getReference("albumNodes/"+albumId+"/"+nodeId);
+        DatabaseReference node = FirebaseDatabase.getInstance().getReference("albums/"+albumId+"/"+nodeId);
         node.removeValue();
     }
 }

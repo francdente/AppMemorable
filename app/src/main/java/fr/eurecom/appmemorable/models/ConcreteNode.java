@@ -1,11 +1,5 @@
 package fr.eurecom.appmemorable.models;
 
-import fr.eurecom.appmemorable.models.AudioNode;
-import fr.eurecom.appmemorable.models.ContentNode;
-import fr.eurecom.appmemorable.models.ImageNode;
-import fr.eurecom.appmemorable.models.TextNode;
-import fr.eurecom.appmemorable.models.User;
-
 //support classes used for serializing objects when sending and receiving data from firebase (because ContentNode is an abstract class)
 public class ConcreteNode {
     private String text, day, album;
@@ -19,17 +13,17 @@ public class ConcreteNode {
         if (node instanceof TextNode) {
             this.text = ((TextNode) node).getText();
             this.user = node.getUser();
-            this.day = node.getDay();
+            this.day = node.getTimestamp();
             this.album = node.getAlbum();
         } else if (node instanceof AudioNode) {
             this.text = ((AudioNode) node).getText();
             this.user = node.getUser();
-            this.day = node.getDay();
+            this.day = node.getTimestamp();
             this.album = node.getAlbum();
         } else if (node instanceof ImageNode) {
             this.text = ((ImageNode) node).getText();
             this.user = node.getUser();
-            this.day = node.getDay();
+            this.day = node.getTimestamp();
             this.album = node.getAlbum();
             this.imageUrl = ((ImageNode) node).getImage();
         }

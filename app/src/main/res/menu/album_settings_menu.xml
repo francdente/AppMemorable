@@ -1,0 +1,10 @@
+<!-- res/menu/album_settings_menu.xml -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_item_edit"
+        android:title="Edit"/>
+    <item
+        android:id="@+id/menu_item_delete"
+        android:title="Delete"/>
+    <!-- Add more items as needed -->
+</menu>

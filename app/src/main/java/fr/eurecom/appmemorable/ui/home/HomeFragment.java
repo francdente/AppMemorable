@@ -23,6 +23,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -36,6 +37,7 @@ import fr.eurecom.appmemorable.models.ConcreteAlbum;
 import fr.eurecom.appmemorable.models.ContentNode;
 import fr.eurecom.appmemorable.models.User;
 import fr.eurecom.appmemorable.ui.home.adapters.AlbumListViewAdapter;
+import fr.eurecom.appmemorable.ui.home.adapters.SelectedUsersAdapter;
 
 public class HomeFragment extends Fragment {
     //private ViewPagerAdapter pagerAdapter;
@@ -86,16 +88,18 @@ public class HomeFragment extends Fragment {
             AutoCompleteTextView autoCompleteTextView = dialog.findViewById(R.id.autoCompleteTextView);
             ListView listView = dialog.findViewById(R.id.listView);
 
-            ArrayList<User> selectedUsers = new ArrayList<>();
-            FirebaseUser usr = FirebaseAuth.getInstance().getCurrentUser();
-            selectedUsers.add(new User(usr.getEmail(), usr.getDisplayName(), usr.getUid()));
-            ArrayAdapter<User> userListAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_dropdown_item_1line, selectedUsers);
-            listView.setAdapter(userListAdapter);
-
             // Create adapter and set it to AutoCompleteTextView
             ArrayAdapter<User> dropDownAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_dropdown_item_1line, new ArrayList<>());
-
             autoCompleteTextView.setAdapter(dropDownAdapter);
+            // Set threshold to start showing suggestions after a certain number of characters
+            autoCompleteTextView.setThreshold(1);
+
+            //Create adapter for the selected users
+            ArrayList<User> selectedUsers = new ArrayList<>();
+            SelectedUsersAdapter userListAdapter = new SelectedUsersAdapter(getContext(), selectedUsers, dropDownAdapter);
+            listView.setAdapter(userListAdapter);
+
+
             FirebaseDatabase.getInstance().getReference("users").addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -119,8 +123,6 @@ public class HomeFragment extends Fragment {
 
                 }
             });
-            // Set threshold to start showing suggestions after a certain number of characters
-            autoCompleteTextView.setThreshold(1);
 
             // Handle item click in the AutoCompleteTextView
             autoCompleteTextView.setOnItemClickListener((parent, v1, p, id) -> {
@@ -134,7 +136,10 @@ public class HomeFragment extends Fragment {
 
             dialog.findViewById(R.id.btnInsert).setOnClickListener(v1 -> {
                 String albumName = ((TextView)dialog.findViewById(R.id.editAlbumName)).getText().toString();
-                this.addAlbum(new Album(albumName, new HashMap<>()), selectedUsers);
+                FirebaseUser usr = FirebaseAuth.getInstance().getCurrentUser();
+                //Add the current users to the selected users that will share the album
+                selectedUsers.add(new User(usr.getEmail(), usr.getDisplayName(), usr.getUid()));
+                this.addAlbum(new Album(albumName, new HashMap<>(), selectedUsers, LocalDateTime.now()), selectedUsers);
                 dialog.dismiss();
             });
             dialog.findViewById(R.id.btnCancel).setOnClickListener(v1 -> {
@@ -142,6 +147,7 @@ public class HomeFragment extends Fragment {
             });
             dialog.show();
         });
+
     }
 
     @Override
@@ -156,7 +162,7 @@ public class HomeFragment extends Fragment {
         album.setId(first_ref.getKey());
         first_ref.setValue(new ConcreteAlbum(album));
         for (int i = 1; i < users.size(); i++) {
-            DatabaseReference ref = userAlbums.child(users.get(i).getUid()).push();
+            DatabaseReference ref = userAlbums.child(users.get(i).getUid()).child(album.getId());
             ref.setValue(new ConcreteAlbum(album));
         }
     }

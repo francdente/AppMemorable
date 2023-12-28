@@ -2,14 +2,16 @@ package fr.eurecom.appmemorable.models;
 
 import android.util.Log;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ConcreteAlbum {
     HashMap<String, ConcreteNode> concreteNodes = new HashMap<>();
-    HashMap<String, User> users = new HashMap<>();
-    private String id;
-    private String title;
+    private String id, title, creationDate;
+    private List<User> users = new ArrayList<>();
 
     public ConcreteAlbum() {
     }
@@ -17,7 +19,8 @@ public class ConcreteAlbum {
     public ConcreteAlbum(Album album) {
         this.id = album.getId();
         this.title = album.getTitle();
-        Log.e("ConcreteAlbum", "users" + users.size());
+        this.creationDate = album.getCreationDate().toString();
+        this.users = album.getUsers();
         for (Map.Entry<String, ContentNode> entry : album.getNodes().entrySet()) {
             String key = entry.getKey();
             ContentNode node = entry.getValue();
@@ -33,7 +36,7 @@ public class ConcreteAlbum {
             node.setId(key);
             nodes.put(key, node);
         }
-        Album album = new Album(this.title, nodes);
+        Album album = new Album(this.title, nodes, this.users, LocalDateTime.parse(this.creationDate));
         album.setId(this.id);
         return album;
     }
@@ -62,11 +65,19 @@ public class ConcreteAlbum {
         this.title = title;
     }
 
-    public HashMap<String, User> getUsers() {
+    public String getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(String creationDate) {
+        this.creationDate = creationDate;
+    }
+
+    public List<User> getUsers() {
         return users;
     }
 
-    public void setUsers(HashMap<String, User> users) {
+    public void setUsers(List<User> users) {
         this.users = users;
     }
 }

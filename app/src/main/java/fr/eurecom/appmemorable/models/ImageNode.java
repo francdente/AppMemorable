@@ -7,8 +7,8 @@ import fr.eurecom.appmemorable.R;
 public class ImageNode extends ContentNode {
     private String text;
     private String imageUrl;
-    public ImageNode(String album, String day, User user, String text, String imageUrl) {
-        super(album, day, user);
+    public ImageNode(String album, String timestamp, User user, String text, String imageUrl) {
+        super(album, timestamp, user);
         this.text = text;
         this.imageUrl = imageUrl;
     }

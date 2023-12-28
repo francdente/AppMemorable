@@ -35,6 +35,7 @@ import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -115,7 +116,7 @@ public class NodesActivity extends AppCompatActivity {
 
             }
         });
-        FirebaseDatabase.getInstance().getReference("albumNodes/"+albumKey).addValueEventListener(new ValueEventListener() {
+        FirebaseDatabase.getInstance().getReference("albums/"+albumKey).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 List<ContentNode> nodes = new ArrayList<>();
@@ -126,7 +127,6 @@ public class NodesActivity extends AppCompatActivity {
                         if (concreteNode != null) {
                             ContentNode node = concreteNode.IntoContentNode();
                             node.setId(nodeSnapshot.getKey());
-                            Log.e("NodesActivity", "onDataChange: "+ node.getAlbum());
                             nodes.add(node);
                         }
                     }
@@ -204,7 +204,7 @@ public class NodesActivity extends AppCompatActivity {
                     dialog.getWindow().getAttributes().windowAnimations = R.style.dialog_animation;
                     dialog.findViewById(R.id.btnInsert).setOnClickListener(v1 -> {
                         String text = ((TextView)dialog.findViewById(R.id.editText)).getText().toString();
-                        this.addNodeToAlbum(new TextNode(albumKey, "1", null, text), albumKey);
+                        this.addNodeToAlbum(new TextNode(albumKey, LocalDateTime.now().toString(), null, text), albumKey);
                         dialog.dismiss();
                     });
                     dialog.findViewById(R.id.btnCancel).setOnClickListener(v1 -> dialog.dismiss());
@@ -213,7 +213,7 @@ public class NodesActivity extends AppCompatActivity {
     }
 
     private void addNodeToAlbum(ContentNode node, String albumKey) {
-        DatabaseReference nodes = FirebaseDatabase.getInstance().getReference("albumNodes/"+albumKey);
+        DatabaseReference nodes = FirebaseDatabase.getInstance().getReference("albums/"+albumKey);
         Log.e("ViewPagerAdapter", "addNodeToAlbum: "+albumKey);
         String key = nodes.push().getKey();
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();

@@ -1,6 +1,7 @@
 package fr.eurecom.appmemorable;
 
 import android.os.Bundle;
+import android.view.WindowManager;
 
 import com.google.android.gms.auth.api.identity.BeginSignInRequest;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;

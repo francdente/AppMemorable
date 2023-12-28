@@ -15,7 +15,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/username"
         android:hint="Email"
-        android:text="e@gmail.com"
+        android:text="al@gmail.com"
         android:inputType="textEmailAddress"/>
     <EditText
         android:layout_width="match_parent"
