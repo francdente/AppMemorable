@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.ListView;
+import android.widget.SearchView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -53,7 +54,31 @@ public class HomeFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        initAlbumListView();
+        initFilterAlbum();
+        initAddAlbumButton();
 
+    }
+
+    private void initFilterAlbum(){
+        SearchView filterAlbum = binding.searchView;
+        filterAlbum.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                albumListViewAdapter.setTitleFilter(query);
+                albumListViewAdapter.getFilter().filter(query);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                albumListViewAdapter.setTitleFilter(newText);
+                albumListViewAdapter.getFilter().filter(newText);
+                return true;
+            }
+        });
+    }
+    private void initAlbumListView(){
         albumListViewAdapter = new AlbumListViewAdapter(getContext(), new ArrayList<>());
         FirebaseDatabase.getInstance().getReference("userAlbums/"+ FirebaseAuth.getInstance().getCurrentUser().getUid())
                 .addValueEventListener(new ValueEventListener() {
@@ -64,8 +89,10 @@ public class HomeFragment extends Fragment {
                             ConcreteAlbum concreteAlbum = albumSnapshot.getValue(ConcreteAlbum.class);
                             albums.add(concreteAlbum.IntoAlbum());
                         }
-                        albumListViewAdapter.clear();
-                        albumListViewAdapter.addAll(albums);
+                        //THIS IS VERY IMPORTANT FOR THE FILTERING TO WORK!!
+                        albumListViewAdapter.setmAlbums(albums);
+                        albumListViewAdapter.getFilter().filter(albumListViewAdapter.getTitleFilter());
+
                         albumListViewAdapter.notifyDataSetChanged();
                     }
 
@@ -76,7 +103,9 @@ public class HomeFragment extends Fragment {
                 });
         //Set adapter for the pager
         binding.listView.setAdapter(albumListViewAdapter);
+    }
 
+    private void initAddAlbumButton(){
         //Set on click listener to add a new album
         binding.addAlbumButton.setOnClickListener(v -> {
             Dialog dialog = new Dialog(getContext());
@@ -147,7 +176,6 @@ public class HomeFragment extends Fragment {
             });
             dialog.show();
         });
-
     }
 
     @Override

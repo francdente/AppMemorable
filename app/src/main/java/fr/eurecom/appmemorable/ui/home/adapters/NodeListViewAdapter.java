@@ -39,7 +39,6 @@ public class NodeListViewAdapter extends ArrayAdapter<ContentNode> {
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
         ContentNode node = getItem(position);
-        Log.e("NodeListViewAdapter", "getView: " + node.getAlbum());
         if (node instanceof TextNode) {
             TextNode textNode = (TextNode) node;
             TextNodeBinding textNodeBinding = TextNodeBinding.inflate(LayoutInflater.from(getContext()));

@@ -1,5 +1,7 @@
 package fr.eurecom.appmemorable.models;
 
+import androidx.annotation.NonNull;
+
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -83,5 +85,10 @@ public class Album {
 
     public void setUsers(List<User> users) {
         this.users = users;
+    }
+
+    @NonNull
+    public String toString(){
+        return title;
     }
 }

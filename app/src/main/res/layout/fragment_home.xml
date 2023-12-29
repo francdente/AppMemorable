@@ -14,28 +14,25 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="#FFFFFF"
-            android:elevation="4dp"
-            android:gravity="center_vertical">
-
             <!-- Add your filter elements here (e.g., EditText, Button, etc.) -->
             <!-- For example, an EditText for search input -->
             <TextView
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:textStyle="bold"
                 android:textSize="35sp"
                 android:text="Your Albums"
                 android:textAlignment="center"
                 android:textColor="#000000"/>
-
+            <SearchView
+                android:id="@+id/search_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:queryHint="Search for an album"
+                android:iconifiedByDefault="false"
+                />
             <!-- Add a filter button or any other filter UI elements -->
 
-        </LinearLayout>
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"

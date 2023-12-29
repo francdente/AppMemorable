@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.Filter;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -52,14 +53,28 @@ import fr.eurecom.appmemorable.models.User;
 
 public class AlbumListViewAdapter extends ArrayAdapter<Album> {
     private boolean mIsAllFabsVisible = false;
+    private List<Album> mAlbums = new ArrayList<>();
+    private List<Album> mFilteredAlbums = new ArrayList<>();
+    private String titleFilter = "";
+    private String dateFilter = "";
+    private String userFilter = "";
+    private boolean filterByTitle, filterByDate, filterByUser;
     public AlbumListViewAdapter(@NonNull Context context, List<Album> albums) {
         super(context, 0, albums);
+        mAlbums.addAll(albums);
+        mFilteredAlbums.addAll(albums);
+    }
+
+    @Override
+    public int getCount() {
+        return mFilteredAlbums.size();
     }
 
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        Album album = getItem(position);
+        Album album = mFilteredAlbums.get(position);
+
         AlbumItemBinding albumItemBinding = AlbumItemBinding.inflate(LayoutInflater.from(getContext()));
         albumItemBinding.textViewAlbumTitle.setText(album.getTitle());
         albumItemBinding.albumDate.setText(album.getTimeFromCreation(LocalDateTime.now()));
@@ -103,6 +118,34 @@ public class AlbumListViewAdapter extends ArrayAdapter<Album> {
         return convertView;
     }
 
+    @NonNull
+    @Override
+    public Filter getFilter() {
+        return new Filter() {
+            @Override
+            protected FilterResults performFiltering(CharSequence constraint) {
+                List<Album> filteredAlbums = new ArrayList<>();
+                for(Album album : mAlbums){
+                    if(album.getTitle().toLowerCase().contains(constraint.toString().toLowerCase())){
+                        filteredAlbums.add(album);
+                    }
+                }
+                FilterResults results = new FilterResults();
+                results.values = filteredAlbums;
+                results.count = filteredAlbums.size();
+                return results;
+            }
+
+            @Override
+            protected void publishResults(CharSequence constraint, FilterResults results) {
+                mFilteredAlbums.clear();
+                mFilteredAlbums.addAll((List<Album>) results.values);
+                notifyDataSetChanged();
+            }
+        };
+    }
+
+
     private void showDeleteConfirmationDialog(Album albumToDelete) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle("Delete Album")
@@ -130,5 +173,20 @@ public class AlbumListViewAdapter extends ArrayAdapter<Album> {
         }
     }
 
+    public List<Album> getmAlbums() {
+        return mAlbums;
+    }
+
+    public void setmAlbums(List<Album> mAlbums) {
+        this.mAlbums = mAlbums;
+    }
+
+    public String getTitleFilter() {
+        return titleFilter;
+    }
+
+    public void setTitleFilter(String titleFilter) {
+        this.titleFilter = titleFilter;
+    }
 }
 
