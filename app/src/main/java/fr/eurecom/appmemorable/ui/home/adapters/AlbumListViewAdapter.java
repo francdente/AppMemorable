@@ -1,8 +1,5 @@
 package fr.eurecom.appmemorable.ui.home.adapters;
 
-import android.app.Activity;
-import android.app.ActivityOptions;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
@@ -10,45 +7,24 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
 import android.widget.Filter;
 import android.widget.ImageButton;
-import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.widget.PopupMenu;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import fr.eurecom.appmemorable.NodesActivity;
 import fr.eurecom.appmemorable.R;
 import fr.eurecom.appmemorable.databinding.AlbumItemBinding;
-import fr.eurecom.appmemorable.databinding.ImageNodeBinding;
-import fr.eurecom.appmemorable.databinding.TextNodeBinding;
 import fr.eurecom.appmemorable.models.Album;
-import fr.eurecom.appmemorable.models.ConcreteAlbum;
-import fr.eurecom.appmemorable.models.ConcreteNode;
-import fr.eurecom.appmemorable.models.ContentNode;
-import fr.eurecom.appmemorable.models.ImageNode;
-import fr.eurecom.appmemorable.models.TextNode;
 import fr.eurecom.appmemorable.models.User;
 
 public class AlbumListViewAdapter extends ArrayAdapter<Album> {
@@ -77,8 +53,7 @@ public class AlbumListViewAdapter extends ArrayAdapter<Album> {
 
         AlbumItemBinding albumItemBinding = AlbumItemBinding.inflate(LayoutInflater.from(getContext()));
         albumItemBinding.textViewAlbumTitle.setText(album.getTitle());
-        albumItemBinding.albumDate.setText(album.getTimeFromCreation(LocalDateTime.now()));
-        final View album_title = albumItemBinding.textViewAlbumTitle;
+        albumItemBinding.albumDate.setText(album.getTimeOfCreation());
         albumItemBinding.albumItem.setOnClickListener(v -> {
             String valueToPass = album.getId();
 
@@ -126,7 +101,7 @@ public class AlbumListViewAdapter extends ArrayAdapter<Album> {
             protected FilterResults performFiltering(CharSequence constraint) {
                 List<Album> filteredAlbums = new ArrayList<>();
                 for(Album album : mAlbums){
-                    if(album.getTitle().toLowerCase().contains(constraint.toString().toLowerCase())){
+                    if(album.getTitle().toLowerCase().contains(titleFilter.toString().toLowerCase())){
                         filteredAlbums.add(album);
                     }
                 }

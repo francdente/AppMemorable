@@ -3,6 +3,7 @@ package fr.eurecom.appmemorable.models;
 import androidx.annotation.NonNull;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 
@@ -62,21 +63,32 @@ public class Album {
         this.creationDate = creationDate;
     }
 
-    public String getTimeFromCreation(LocalDateTime now) {
-        String time = "";
-        if (now.getYear() - creationDate.getYear() > 0) {
-            time = (now.getYear() - creationDate.getYear()) + " years ago";
-        } else if (now.getMonthValue() - creationDate.getMonthValue() > 0) {
-            time = (now.getMonthValue() - creationDate.getMonthValue()) + " months ago";
-        } else if (now.getDayOfMonth() - creationDate.getDayOfMonth() > 0) {
-            time = (now.getDayOfMonth() - creationDate.getDayOfMonth()) + " days ago";
-        } else if (now.getHour() - creationDate.getHour() > 0) {
-            time = (now.getHour() - creationDate.getHour()) + " hours ago";
+    public String getTimeOfCreation() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime dateTimestamp = creationDate;
+        if (now.getYear() == dateTimestamp.getYear() && now.getMonthValue() == dateTimestamp.getMonthValue() && now.getDayOfMonth() == dateTimestamp.getDayOfMonth()) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("'Today at' hh:mm a");
+            return dateTimestamp.format(formatter);
         }
-        else {
-            time = (now.getMinute() - creationDate.getMinute()) + " minutes ago";
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy 'at' hh:mm a");
+
+        // Format the date
+        String formattedDate = dateTimestamp.format(formatter);
+        formattedDate = capitalizeMonth(formattedDate);
+        return formattedDate;
+    }
+
+    private String capitalizeMonth(String date) {
+        // Split the date string by spaces
+        String[] parts = date.split(" ");
+
+        // Capitalize the first letter of the month (assuming it's the first word after the month abbreviation)
+        if (parts.length >= 2) {
+            parts[0] = parts[0].substring(0, 1).toUpperCase() + parts[0].substring(1);
         }
-        return time;
+
+        // Join the parts back together
+        return String.join(" ", parts);
     }
 
     public List<User> getUsers() {

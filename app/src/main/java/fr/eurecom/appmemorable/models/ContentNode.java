@@ -57,7 +57,20 @@ public abstract class ContentNode {
 
         // Format the date
         String formattedDate = dateTimestamp.format(formatter);
-
+        formattedDate = capitalizeMonth(formattedDate);
         return formattedDate;
+    }
+
+    private String capitalizeMonth(String date) {
+        // Split the date string by spaces
+        String[] parts = date.split(" ");
+
+        // Capitalize the first letter of the month (assuming it's the first word after the month abbreviation)
+        if (parts.length >= 2) {
+            parts[0] = parts[0].substring(0, 1).toUpperCase() + parts[0].substring(1);
+        }
+
+        // Join the parts back together
+        return String.join(" ", parts);
     }
 }

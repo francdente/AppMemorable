@@ -66,14 +66,14 @@ public class HomeFragment extends Fragment {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 albumListViewAdapter.setTitleFilter(query);
-                albumListViewAdapter.getFilter().filter(query);
+                albumListViewAdapter.getFilter().filter("");
                 return true;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
                 albumListViewAdapter.setTitleFilter(newText);
-                albumListViewAdapter.getFilter().filter(newText);
+                albumListViewAdapter.getFilter().filter("");
                 return true;
             }
         });
@@ -91,8 +91,7 @@ public class HomeFragment extends Fragment {
                         }
                         //THIS IS VERY IMPORTANT FOR THE FILTERING TO WORK!!
                         albumListViewAdapter.setmAlbums(albums);
-                        albumListViewAdapter.getFilter().filter(albumListViewAdapter.getTitleFilter());
-
+                        albumListViewAdapter.getFilter().filter("");
                         albumListViewAdapter.notifyDataSetChanged();
                     }
 
