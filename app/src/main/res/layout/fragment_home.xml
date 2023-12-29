@@ -24,7 +24,6 @@
             <!-- Add your filter elements here (e.g., EditText, Button, etc.) -->
             <!-- For example, an EditText for search input -->
             <TextView
-                android:id="@+id/editTextSearch"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"

@@ -1,5 +1,7 @@
 package fr.eurecom.appmemorable.ui.home.adapters;
 
+import android.app.Activity;
+import android.app.ActivityOptions;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
@@ -61,6 +63,7 @@ public class AlbumListViewAdapter extends ArrayAdapter<Album> {
         AlbumItemBinding albumItemBinding = AlbumItemBinding.inflate(LayoutInflater.from(getContext()));
         albumItemBinding.textViewAlbumTitle.setText(album.getTitle());
         albumItemBinding.albumDate.setText(album.getTimeFromCreation(LocalDateTime.now()));
+        final View album_title = albumItemBinding.textViewAlbumTitle;
         albumItemBinding.albumItem.setOnClickListener(v -> {
             String valueToPass = album.getId();
 

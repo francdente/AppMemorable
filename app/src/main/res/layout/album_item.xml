@@ -35,6 +35,7 @@
             android:layout_height="wrap_content"
             android:textSize="18sp"
             android:text="placeholder"
+            android:transitionName="album_title"
             android:clickable="true"
             android:textStyle="bold"
             android:focusable="true"

@@ -26,12 +26,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/btnInsert"
+        android:textCursorDrawable="@drawable/custom_cursor"
+        style="@style/ThemeOverlay.Material3.TextInputEditText.OutlinedBox"
         android:hint="Album Name"/>
     <AutoCompleteTextView
         android:id="@+id/autoCompleteTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/editAlbumName"
+        android:textCursorDrawable="@drawable/custom_cursor"
         android:hint="Shared with"/>
     <ListView
         android:id="@+id/listView"

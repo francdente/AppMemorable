@@ -17,7 +17,7 @@ public class SplashScreenActivity extends AppCompatActivity {
     TextView logo;
 
     //Duration of splash screen
-    int SPLASH_SCREEN = 3000;
+    int SPLASH_SCREEN = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
