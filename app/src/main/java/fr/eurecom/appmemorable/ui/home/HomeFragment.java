@@ -166,8 +166,9 @@ public class HomeFragment extends Fragment {
                 String albumName = ((TextView)dialog.findViewById(R.id.editAlbumName)).getText().toString();
                 FirebaseUser usr = FirebaseAuth.getInstance().getCurrentUser();
                 //Add the current users to the selected users that will share the album
-                selectedUsers.add(new User(usr.getEmail(), usr.getDisplayName(), usr.getUid()));
-                this.addAlbum(new Album(albumName, new HashMap<>(), selectedUsers, LocalDateTime.now()), selectedUsers);
+                User owner = new User(usr.getEmail(), usr.getDisplayName(), usr.getUid());
+                selectedUsers.add(owner);
+                this.addAlbum(new Album(albumName, new HashMap<>(), selectedUsers, LocalDateTime.now(), owner), selectedUsers);
                 dialog.dismiss();
             });
             dialog.findViewById(R.id.btnCancel).setOnClickListener(v1 -> {
@@ -184,6 +185,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void addAlbum(Album album, List<User> users){
+        Log.e("addAlbum", album.getOwner().getEmail());
         DatabaseReference userAlbums = FirebaseDatabase.getInstance().getReference("userAlbums");
         DatabaseReference first_ref = userAlbums.child(users.get(0).getUid()).push();
         album.setId(first_ref.getKey());

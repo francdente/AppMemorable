@@ -12,16 +12,18 @@ public class Album {
     private String id, title;
 
     private List<User> users;
+    private User owner;
     private LocalDateTime creationDate;
 
     public Album(){
         nodes = new HashMap<>();
     }
-    public Album(String title, HashMap<String, ContentNode> nodes, List<User> users, LocalDateTime creationDate) {
+    public Album(String title, HashMap<String, ContentNode> nodes, List<User> users, LocalDateTime creationDate, User owner) {
         this.nodes = nodes;
         this.title = title;
         this.creationDate = creationDate;
         this.users = users;
+        this.owner = owner;
     }
 
     public HashMap<String, ContentNode> getNodes() {
@@ -102,5 +104,13 @@ public class Album {
     @NonNull
     public String toString(){
         return title;
+    }
+
+    public User getOwner() {
+        return owner;
+    }
+
+    public void setOwner(User owner) {
+        this.owner = owner;
     }
 }

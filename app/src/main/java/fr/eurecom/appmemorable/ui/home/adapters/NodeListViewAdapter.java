@@ -14,6 +14,7 @@ import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.widget.PopupMenu;
 
 import com.bumptech.glide.Glide;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
@@ -45,24 +46,26 @@ public class NodeListViewAdapter extends ArrayAdapter<ContentNode> {
             textNodeBinding.textView.setText(textNode.getText());
             textNodeBinding.author.setText(textNode.getUser().getName());
             textNodeBinding.messageDate.setText(textNode.getMessageDate());
-            textNodeBinding.textView.setOnLongClickListener(v1 -> {
-                PopupMenu popupMenu = new PopupMenu(getContext(), v1);
-                popupMenu.inflate(R.menu.album_settings_menu); // Create a menu resource file (res/menu/album_settings_menu.xml)
-                // Handle menu item clicks
-                popupMenu.setOnMenuItemClickListener(item -> {
-                    if (item.getItemId() == R.id.menu_item_edit) {
-                        return true;
-                    } else if (item.getItemId() == R.id.menu_item_delete) {
-                        showDeleteConfirmationDialog(node.getAlbum(), node.getId());
-                        return true;
-                    }
+            if (textNode.getUser().getUid().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
+                textNodeBinding.textView.setOnLongClickListener(v1 -> {
+                    PopupMenu popupMenu = new PopupMenu(getContext(), v1);
+                    popupMenu.inflate(R.menu.album_settings_menu); // Create a menu resource file (res/menu/album_settings_menu.xml)
+                    // Handle menu item clicks
+                    popupMenu.setOnMenuItemClickListener(item -> {
+                        if (item.getItemId() == R.id.menu_item_edit) {
+                            return true;
+                        } else if (item.getItemId() == R.id.menu_item_delete) {
+                            showDeleteConfirmationDialog(node.getAlbum(), node.getId());
+                            return true;
+                        }
+                        return false;
+                    });
+
+                    // Show the popup menu
+                    popupMenu.show();
                     return false;
                 });
-
-                // Show the popup menu
-                popupMenu.show();
-                return false;
-            });
+            }
             convertView = textNodeBinding.getRoot();
         } else if (node instanceof ImageNode) {
             ImageNode imageNode = (ImageNode) node;

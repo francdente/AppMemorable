@@ -12,6 +12,7 @@ public class ConcreteAlbum {
     HashMap<String, ConcreteNode> concreteNodes = new HashMap<>();
     private String id, title, creationDate;
     private List<User> users = new ArrayList<>();
+    private User owner;
 
     public ConcreteAlbum() {
     }
@@ -21,6 +22,7 @@ public class ConcreteAlbum {
         this.title = album.getTitle();
         this.creationDate = album.getCreationDate().toString();
         this.users = album.getUsers();
+        this.owner = album.getOwner();
         for (Map.Entry<String, ContentNode> entry : album.getNodes().entrySet()) {
             String key = entry.getKey();
             ContentNode node = entry.getValue();
@@ -36,7 +38,7 @@ public class ConcreteAlbum {
             node.setId(key);
             nodes.put(key, node);
         }
-        Album album = new Album(this.title, nodes, this.users, LocalDateTime.parse(this.creationDate));
+        Album album = new Album(this.title, nodes, this.users, LocalDateTime.parse(this.creationDate), this.owner);
         album.setId(this.id);
         return album;
     }
@@ -79,5 +81,13 @@ public class ConcreteAlbum {
 
     public void setUsers(List<User> users) {
         this.users = users;
+    }
+
+    public User getOwner() {
+        return owner;
+    }
+
+    public void setOwner(User owner) {
+        this.owner = owner;
     }
 }
