@@ -7,31 +7,118 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-            <!-- Add your filter elements here (e.g., EditText, Button, etc.) -->
-            <!-- For example, an EditText for search input -->
+        <!-- Add your filter elements here (e.g., EditText, Button, etc.) -->
+        <!-- For example, an EditText for search input -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <!-- Toggle Filter Button -->
+            <ImageButton
+                android:id="@+id/toggle_filter_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/filter_edit_svgrepo_com"
+                android:layout_gravity="center"
+                android:layout_marginStart="10dp"
+                android:background="@color/white"/>
+
+            <!-- Centered Title -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textStyle="bold"
+                    android:textSize="35sp"
+                    android:text="Your Albums"
+                    android:textAlignment="center"
+                    android:textColor="#000000"/>
+
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Rest of your layout remains unchanged -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:orientation="vertical">
             <TextView
+                android:id="@+id/filtering_options_text"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textStyle="bold"
-                android:textSize="35sp"
-                android:text="Your Albums"
-                android:textAlignment="center"
-                android:textColor="#000000"/>
+                android:textSize="20sp"
+                android:text="Filtering options"
+                android:layout_gravity="center"
+                android:visibility="gone"/>
             <SearchView
                 android:id="@+id/search_view"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:queryHint="Search for an album"
                 android:iconifiedByDefault="false"
+                android:visibility="gone"
                 />
-            <!-- Add a filter button or any other filter UI elements -->
+            <LinearLayout
+                android:id="@+id/filtering_options"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:visibility="gone">
+                <!-- Owned CheckBox -->
+                <CheckBox
+                    android:id="@+id/owned_filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginEnd="10dp"
+                    android:text="Owned"/>
+
+                <!-- Sort By Spinner -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:orientation="horizontal">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Sort by:"/>
+                <Spinner
+                    android:id="@+id/spinnerSortBy"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingStart="0dp"
+                    android:paddingEnd="0dp"
+                    android:spinnerMode="dropdown"/>
+                </LinearLayout>
+
+                <!-- Calendar Icon (ImageButton) -->
+                <ImageButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/calendar_alt_svgrepo_com"
+                    android:layout_gravity="center"
+                    android:background="#FFFFFF"/>
+            </LinearLayout>
+
+
+        </LinearLayout>
+
+        <!-- Add a filter button or any other filter UI elements -->
 
         <View
             android:layout_width="match_parent"

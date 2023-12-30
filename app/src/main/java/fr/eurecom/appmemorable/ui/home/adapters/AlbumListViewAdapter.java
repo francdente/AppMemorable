@@ -20,7 +20,9 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import fr.eurecom.appmemorable.NodesActivity;
 import fr.eurecom.appmemorable.R;
@@ -35,6 +37,7 @@ public class AlbumListViewAdapter extends ArrayAdapter<Album> {
     private String titleFilter = "";
     private String dateFilter = "";
     private String userFilter = "";
+    private boolean ownedFilter = false;
     private boolean filterByTitle, filterByDate, filterByUser;
     private AlbumItemBinding albumItemBinding;
 
@@ -53,6 +56,7 @@ public class AlbumListViewAdapter extends ArrayAdapter<Album> {
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
         Album album = mFilteredAlbums.get(position);
+
         albumItemBinding = AlbumItemBinding.inflate(LayoutInflater.from(getContext()));
         albumItemBinding.textViewAlbumTitle.setText(album.getTitle());
         albumItemBinding.albumDate.setText(album.getTimeOfCreation());
@@ -90,7 +94,6 @@ public class AlbumListViewAdapter extends ArrayAdapter<Album> {
             popupMenu.show();
         });
     }
-
     private void initOpenAlbumButton(Album album) {
         albumItemBinding.albumItem.setOnClickListener(v -> {
             String valueToPass = album.getId();
@@ -106,7 +109,6 @@ public class AlbumListViewAdapter extends ArrayAdapter<Album> {
             this.getContext().startActivity(intent);
         });
     }
-
     @NonNull
     @Override
     public Filter getFilter() {
@@ -115,7 +117,8 @@ public class AlbumListViewAdapter extends ArrayAdapter<Album> {
             protected FilterResults performFiltering(CharSequence constraint) {
                 List<Album> filteredAlbums = new ArrayList<>();
                 for (Album album : mAlbums) {
-                    if (album.getTitle().toLowerCase().contains(titleFilter.toString().toLowerCase())) {
+                    if (album.getTitle().toLowerCase().contains(titleFilter.toString().toLowerCase()) &&
+                            (!ownedFilter || album.getOwner().getUid().equals(FirebaseAuth.getInstance().getCurrentUser().getUid()))) {
                         filteredAlbums.add(album);
                     }
                 }
@@ -147,8 +150,6 @@ public class AlbumListViewAdapter extends ArrayAdapter<Album> {
                 })
                 .show();
     }
-
-
     private void deleteAlbum(Album album) {
         //Delete from albums
         FirebaseDatabase.getInstance().getReference("albums/" + album.getId()).removeValue();
@@ -160,7 +161,6 @@ public class AlbumListViewAdapter extends ArrayAdapter<Album> {
             FirebaseDatabase.getInstance().getReference(path).removeValue();
         }
     }
-
     public List<Album> getmAlbums() {
         return mAlbums;
     }
@@ -175,6 +175,16 @@ public class AlbumListViewAdapter extends ArrayAdapter<Album> {
 
     public void setTitleFilter(String titleFilter) {
         this.titleFilter = titleFilter;
+    }
+
+    public void setOwnedFilter(boolean isChecked) {
+        this.ownedFilter = isChecked;
+    }
+
+    public void sortAlbums(Comparator<Album> comparator) {
+        mFilteredAlbums.sort(comparator);
+        Log.e("albums", mFilteredAlbums.stream().map(Album::getTitle).collect(Collectors.toList()).toString());
+        notifyDataSetChanged();
     }
 }
 

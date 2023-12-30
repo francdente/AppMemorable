@@ -6,10 +6,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.SearchView;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -44,6 +47,7 @@ public class HomeFragment extends Fragment {
     //private ViewPagerAdapter pagerAdapter;
     private AlbumListViewAdapter albumListViewAdapter;
     private FragmentHomeBinding binding;
+    private boolean filterShown = false;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentHomeBinding.inflate(inflater, container, false);
@@ -54,14 +58,58 @@ public class HomeFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        initToggleFilterButton();
         initAlbumListView();
         initFilterAlbum();
         initAddAlbumButton();
 
     }
 
+    private void initToggleFilterButton(){
+        binding.toggleFilterButton.setOnClickListener(v -> {
+            if(filterShown){
+                binding.searchView.setVisibility(View.GONE);
+                binding.filteringOptions.setVisibility(View.GONE);
+                binding.filteringOptionsText.setVisibility(View.GONE);
+            }else{
+                binding.searchView.setVisibility(View.VISIBLE);
+                binding.filteringOptions.setVisibility(View.VISIBLE);
+                binding.filteringOptionsText.setVisibility(View.VISIBLE);
+            }
+            filterShown = !filterShown;
+        });
+    }
     private void initFilterAlbum(){
         SearchView filterAlbum = binding.searchView;
+        CheckBox ownedFilter = binding.ownedFilter;
+        Spinner sortSpinner = binding.spinnerSortBy;
+
+        sortSpinner.setAdapter(new ArrayAdapter<>(this.getContext(), android.R.layout.simple_spinner_dropdown_item, new String[]{"Date", "Title"}));
+        sortSpinner.setOnItemSelectedListener(new Spinner.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Comparator<Album> comparator;
+                if (position == 0) {
+                    Log.e("sort", "by date");
+                    comparator = Comparator.comparing(Album::getTimeOfCreation);
+                } else {
+                    Log.e("sort", "by title");
+                    //Don't count uppercase and lowercase
+                    comparator = Comparator.comparing(Album::getTitle, String.CASE_INSENSITIVE_ORDER);
+                }
+                albumListViewAdapter.sortAlbums(comparator);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+        ownedFilter.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            albumListViewAdapter.setOwnedFilter(isChecked);
+            albumListViewAdapter.getFilter().filter("");
+        });
         filterAlbum.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
