@@ -44,7 +44,7 @@
         <ImageView
             android:id="@+id/image_view"
             android:layout_width="match_parent"
-            android:layout_height="194dp"
+            android:layout_height="1280px"
             android:importantForAccessibility="no"
             android:scaleType="centerCrop" />
 

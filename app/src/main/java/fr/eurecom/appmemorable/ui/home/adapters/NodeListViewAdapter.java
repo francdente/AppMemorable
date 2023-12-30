@@ -76,6 +76,7 @@ public class NodeListViewAdapter extends ArrayAdapter<ContentNode> {
             Glide
                     .with(this.getContext())
                     .load(storageRef)
+                    .centerCrop()
                     .into(imageNodeBinding.imageView);
 
             //imageNodeBinding.imageView.setImageDrawable(AppCompatResources.getDrawable(getContext(),imageNode.getImage()));
