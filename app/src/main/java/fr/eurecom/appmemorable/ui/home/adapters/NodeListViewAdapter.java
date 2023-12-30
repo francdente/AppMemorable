@@ -43,29 +43,7 @@ public class NodeListViewAdapter extends ArrayAdapter<ContentNode> {
         if (node instanceof TextNode) {
             TextNode textNode = (TextNode) node;
             TextNodeBinding textNodeBinding = TextNodeBinding.inflate(LayoutInflater.from(getContext()));
-            textNodeBinding.textView.setText(textNode.getText());
-            textNodeBinding.author.setText(textNode.getUser().getName());
-            textNodeBinding.messageDate.setText(textNode.getMessageDate());
-            if (textNode.getUser().getUid().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
-                textNodeBinding.textView.setOnLongClickListener(v1 -> {
-                    PopupMenu popupMenu = new PopupMenu(getContext(), v1);
-                    popupMenu.inflate(R.menu.album_settings_menu); // Create a menu resource file (res/menu/album_settings_menu.xml)
-                    // Handle menu item clicks
-                    popupMenu.setOnMenuItemClickListener(item -> {
-                        if (item.getItemId() == R.id.menu_item_edit) {
-                            return true;
-                        } else if (item.getItemId() == R.id.menu_item_delete) {
-                            showDeleteConfirmationDialog(node.getAlbum(), node.getId());
-                            return true;
-                        }
-                        return false;
-                    });
-
-                    // Show the popup menu
-                    popupMenu.show();
-                    return false;
-                });
-            }
+            initializeTextNode(textNode, textNodeBinding);
             convertView = textNodeBinding.getRoot();
         } else if (node instanceof ImageNode) {
             ImageNode imageNode = (ImageNode) node;
@@ -78,18 +56,66 @@ public class NodeListViewAdapter extends ArrayAdapter<ContentNode> {
                     .load(storageRef)
                     .centerCrop()
                     .into(imageNodeBinding.imageView);
-
-            //imageNodeBinding.imageView.setImageDrawable(AppCompatResources.getDrawable(getContext(),imageNode.getImage()));
-            imageNodeBinding.author.setText(imageNode.getUser().getName());
-            imageNodeBinding.textView.setText(imageNode.getText());
-            imageNodeBinding.deleteButton.setOnClickListener(v1 -> this.deleteNode("albums/" + node.getAlbum() + "/" + node.getId(), node.getId()));
+            initializeImageNode(imageNode, imageNodeBinding);
             convertView = imageNodeBinding.getRoot();
 
         }
         return convertView;
     }
 
+    private void initializeImageNode(ImageNode imageNode, ImageNodeBinding imageNodeBinding) {
+        imageNodeBinding.author.setText(imageNode.getUser().getName());
+        imageNodeBinding.textView.setText(imageNode.getText());
+        if (imageNode.getUser().getUid().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
+            imageNodeBinding.imageView.setOnLongClickListener(v1 -> {
+                PopupMenu popupMenu = new PopupMenu(getContext(), v1);
+                popupMenu.inflate(R.menu.album_settings_menu); // Create a menu resource file (res/menu/album_settings_menu.xml)
+                // Handle menu item clicks
+                popupMenu.setOnMenuItemClickListener(item -> {
+                    if (item.getItemId() == R.id.menu_item_edit) {
+                        return true;
+                    } else if (item.getItemId() == R.id.menu_item_delete) {
+                        showDeleteConfirmationDialog(imageNode.getAlbum(), imageNode.getId());
+                        return true;
+                    }
+                    return false;
+                });
+
+                // Show the popup menu
+                popupMenu.show();
+                return false;
+            });
+        }
+    }
+
+    private void initializeTextNode(TextNode textNode, TextNodeBinding textNodeBinding) {
+        textNodeBinding.textView.setText(textNode.getText());
+        textNodeBinding.author.setText(textNode.getUser().getName());
+        textNodeBinding.messageDate.setText(textNode.getMessageDate());
+        if (textNode.getUser().getUid().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
+            textNodeBinding.textView.setOnLongClickListener(v1 -> {
+                PopupMenu popupMenu = new PopupMenu(getContext(), v1);
+                popupMenu.inflate(R.menu.album_settings_menu); // Create a menu resource file (res/menu/album_settings_menu.xml)
+                // Handle menu item clicks
+                popupMenu.setOnMenuItemClickListener(item -> {
+                    if (item.getItemId() == R.id.menu_item_edit) {
+                        return true;
+                    } else if (item.getItemId() == R.id.menu_item_delete) {
+                        showDeleteConfirmationDialog(textNode.getAlbum(), textNode.getId());
+                        return true;
+                    }
+                    return false;
+                });
+
+                // Show the popup menu
+                popupMenu.show();
+                return false;
+            });
+        }
+    }
+
     private void deleteNode(String albumId, String nodeId) {
+        //TODO: delete the image/audio from cloud storage if it is an image/audio node
         DatabaseReference node = FirebaseDatabase.getInstance().getReference("albums/" + albumId + "/" + nodeId);
         node.removeValue();
     }
