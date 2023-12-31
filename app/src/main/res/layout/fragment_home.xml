@@ -51,9 +51,11 @@
 
         <!-- Rest of your layout remains unchanged -->
         <LinearLayout
+            android:id="@+id/filtering_options"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
+            android:visibility="gone"
             android:orientation="vertical">
             <TextView
                 android:id="@+id/filtering_options_text"
@@ -62,30 +64,18 @@
                 android:textStyle="bold"
                 android:textSize="20sp"
                 android:text="Filtering options"
-                android:layout_gravity="center"
-                android:visibility="gone"/>
+                android:layout_gravity="center" />
             <SearchView
                 android:id="@+id/search_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:queryHint="Search for an album"
                 android:iconifiedByDefault="false"
-                android:visibility="gone"
                 />
             <LinearLayout
-                android:id="@+id/filtering_options"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:visibility="gone">
-                <!-- Owned CheckBox -->
-                <CheckBox
-                    android:id="@+id/owned_filter"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginEnd="10dp"
-                    android:text="Owned"/>
+                android:orientation="horizontal">
 
                 <!-- Sort By Spinner -->
                 <LinearLayout
@@ -113,6 +103,14 @@
                     android:src="@drawable/calendar_alt_svgrepo_com"
                     android:layout_gravity="center"
                     android:background="#FFFFFF"/>
+                <!-- Owned CheckBox -->
+                <CheckBox
+                    android:id="@+id/owned_filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginEnd="10dp"
+                    android:text="Owned"/>
             </LinearLayout>
 
 
