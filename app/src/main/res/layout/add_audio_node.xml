@@ -1,0 +1,61 @@
+<!-- res/layout/add_node_audio.xml -->
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout_add_node_audio"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Chronometer for Recording Time -->
+    <Chronometer
+        android:id="@+id/chronometerRecording"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginBottom="16dp"
+        android:text="00:00"
+        android:textColor="#000000"
+        android:textSize="26sp" />
+
+
+    <!-- Start Recording Button -->
+    <Button
+        android:id="@+id/btnStartRecording"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Start Recording" />
+
+    <!-- Stop Recording Button -->
+    <Button
+        android:id="@+id/btnStopRecording"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Stop Recording"
+        android:visibility="gone" />
+
+    <!-- Delete Recording Button -->
+    <Button
+        android:id="@+id/btnDeleteRecording"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Delete Recording"
+        android:visibility="gone" />
+
+    <!-- Insert Button -->
+    <Button
+        android:id="@+id/btnInsert"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Insert" />
+
+
+    <!-- Cancel Button -->
+    <Button
+        android:id="@+id/btnCancel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Cancel" />
+
+</LinearLayout>
