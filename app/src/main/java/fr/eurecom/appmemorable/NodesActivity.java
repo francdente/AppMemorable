@@ -9,14 +9,16 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Dialog;
 import android.content.Intent;
+import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.SystemClock;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
-import android.widget.ListView;
+import android.widget.Button;
+import android.widget.Chronometer;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,19 +33,20 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicReference;
+import java.io.File;
 
 import fr.eurecom.appmemorable.databinding.ActivityNodesBinding;
-import fr.eurecom.appmemorable.models.Album;
+import fr.eurecom.appmemorable.models.AudioNode;
 import fr.eurecom.appmemorable.models.ConcreteNode;
 import fr.eurecom.appmemorable.models.ContentNode;
 import fr.eurecom.appmemorable.models.ImageNode;
@@ -57,6 +60,9 @@ public class NodesActivity extends AppCompatActivity {
     private boolean mIsAllFabsVisible = false;
     ActivityResultLauncher<Intent> activityResultLauncher;
 
+    MediaRecorder mediaRecorder;
+    String audioFilePath;
+    File audioFile = null;
     LinearProgressIndicator progress = null;
     Uri image;
 
@@ -124,8 +130,10 @@ public class NodesActivity extends AppCompatActivity {
                 if (snapshot.exists() && snapshot.hasChildren()) {
                     for (DataSnapshot nodeSnapshot : snapshot.getChildren()) {
                         ConcreteNode concreteNode = nodeSnapshot.getValue(ConcreteNode.class);
+
                         if (concreteNode != null) {
                             ContentNode node = concreteNode.IntoContentNode();
+
                             node.setId(nodeSnapshot.getKey());
                             nodes.add(node);
                         }
@@ -169,12 +177,111 @@ public class NodesActivity extends AppCompatActivity {
         });
         binding.addAudio.setOnClickListener(
                 v -> {
+
                     binding.addAudio.setVisibility(View.GONE);
                     binding.addImage.setVisibility(View.GONE);
                     binding.addText.setVisibility(View.GONE);
 
+                    Dialog dialog = new Dialog(this);
+                    dialog.setContentView(R.layout.add_audio_node);
+                    dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                    dialog.setCancelable(false);
+                    dialog.getWindow().getAttributes().windowAnimations = R.style.dialog_animation;
+
+                    Chronometer chronometerRecording = dialog.findViewById(R.id.chronometerRecording);
+                    Button btnInsert = dialog.findViewById(R.id.btnInsert);
+                    Button btnCancel = dialog.findViewById(R.id.btnCancel);
+                    Button btnStartRecording = dialog.findViewById(R.id.btnStartRecording);
+                    Button btnStopRecording = dialog.findViewById(R.id.btnStopRecording);
+                    Button btnDeleteRecording = dialog.findViewById(R.id.btnDeleteRecording);
+
+                    chronometerRecording.setBase(SystemClock.elapsedRealtime());
+                    chronometerRecording.setText("00:00");
+                    String audioUrl = UUID.randomUUID().toString();
+                    audioFilePath = getExternalCacheDir().getAbsolutePath() + audioUrl;
+                    Log.e("NodesActivity", "audiofilePath: "+audioFilePath);
+                    final String[] duration = {null};
+
+                    btnInsert.setOnClickListener(v1 -> {
+                        if(audioFile != null){
+
+
+
+                            StorageReference storageRef = FirebaseStorage.getInstance().getReference();
+                            StorageReference audioRef = storageRef.child(""+albumKey+"/"+audioUrl);
+
+                            audioRef.putFile(Uri.fromFile(audioFile)).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                                @Override
+                                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+
+                                    NodesActivity.this.addNodeToAlbum(new AudioNode(albumKey, LocalDateTime.now().toString(), null, null, audioUrl, duration[0]), albumKey);
+                                    Toast.makeText(NodesActivity.this,"Audio added", Toast.LENGTH_SHORT).show();
+                                }
+                            }).addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+
+                                    Toast.makeText(NodesActivity.this, "Something went wrong", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+
+                            dialog.dismiss();
+                        }else{
+                            Toast.makeText(NodesActivity.this, "No audio source to insert!", Toast.LENGTH_SHORT).show();
+                        }
+
+
+                    });
+
+                    btnCancel.setOnClickListener(v1 -> {
+                        // Add logic to handle delete button click
+                        // You can dismiss the dialog or perform any other action
+                        deleteRecording();
+                        dialog.dismiss();
+                    });
+
+                    btnStartRecording.setOnClickListener(v1 -> {
+                        // Add logic to handle start recording button click
+                        // You can start recording audio here
+
+
+
+                        chronometerRecording.start();
+                        startRecording();
+                        btnStartRecording.setVisibility(View.GONE);
+                        btnStopRecording.setVisibility(View.VISIBLE);
+                        btnDeleteRecording.setVisibility(View.GONE);
+                    });
+
+                    btnStopRecording.setOnClickListener(v1 -> {
+                        // Add logic to handle stop recording button click
+                        // You can stop recording audio here
+                        stopRecording();
+                        chronometerRecording.stop();
+                        long elapsedSeconds = (SystemClock.elapsedRealtime() - chronometerRecording.getBase())/ 1000;
+                        String time = String.format(Locale.getDefault(), "%02d:%02d", (elapsedSeconds % 3600) / 60, elapsedSeconds % 60);
+                        duration[0] = time;
+
+                        btnStartRecording.setVisibility(View.GONE);
+                        btnStopRecording.setVisibility(View.GONE);
+                        btnDeleteRecording.setVisibility(View.VISIBLE);
+                    });
+
+                    btnDeleteRecording.setOnClickListener(v1 -> {
+                        // Add logic to handle delete recording button click
+                        // You can delete the recorded audio file here
+                        deleteRecording();
+                        chronometerRecording.setBase(SystemClock.elapsedRealtime());
+                        chronometerRecording.setText("00:00");
+                        btnStartRecording.setVisibility(View.VISIBLE);
+                        btnStopRecording.setVisibility(View.GONE);
+                        btnDeleteRecording.setVisibility(View.GONE);
+                    });
+
+                    dialog.show();
+
                     mIsAllFabsVisible = false;
-                    Toast.makeText(this,"Audio added", Toast.LENGTH_SHORT).show();
+
                 });
         binding.addImage.setOnClickListener(
                 v -> {
@@ -219,5 +326,39 @@ public class NodesActivity extends AppCompatActivity {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         node.setUser(new User(user.getEmail(), user.getDisplayName(), user.getUid()));
         nodes.child(key).setValue(new ConcreteNode(node));
+    }
+
+    // Update the startRecording() method
+    private void startRecording() {
+        try {
+            mediaRecorder = new MediaRecorder();
+            //audioFilePath = getExternalCacheDir().getAbsolutePath() + "/recorded_audio.3gp";
+            mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+            mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+            mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+            mediaRecorder.setOutputFile(audioFilePath);
+
+            mediaRecorder.prepare();
+            mediaRecorder.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Update the stopRecording() method to release MediaRecorder after stopping
+    private void stopRecording() {
+        if (mediaRecorder != null) {
+            mediaRecorder.stop();
+            mediaRecorder.release();
+            mediaRecorder = null;
+        }
+        audioFile = new File(audioFilePath);
+    }
+
+    private void deleteRecording() {
+
+        if (audioFile != null) {
+            audioFile = null;
+        }
     }
 }

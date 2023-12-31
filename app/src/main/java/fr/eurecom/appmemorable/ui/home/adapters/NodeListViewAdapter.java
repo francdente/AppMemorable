@@ -1,6 +1,8 @@
 package fr.eurecom.appmemorable.ui.home.adapters;
 
 import android.content.Context;
+import android.media.MediaPlayer;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,12 +22,16 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import fr.eurecom.appmemorable.R;
+import fr.eurecom.appmemorable.databinding.AudioNodeBinding;
 import fr.eurecom.appmemorable.databinding.ImageNodeBinding;
 import fr.eurecom.appmemorable.databinding.TextNodeBinding;
 import fr.eurecom.appmemorable.models.Album;
+import fr.eurecom.appmemorable.models.AudioNode;
 import fr.eurecom.appmemorable.models.ContentNode;
 import fr.eurecom.appmemorable.models.ImageNode;
 import fr.eurecom.appmemorable.models.TextNode;
@@ -59,6 +65,11 @@ public class NodeListViewAdapter extends ArrayAdapter<ContentNode> {
             initializeImageNode(imageNode, imageNodeBinding);
             convertView = imageNodeBinding.getRoot();
 
+        } else if (node instanceof AudioNode) {
+            AudioNode audioNode = (AudioNode) node;
+            AudioNodeBinding audioNodeBinding = AudioNodeBinding.inflate(LayoutInflater.from(getContext()));
+            initializeAudioNode(audioNode, audioNodeBinding);
+            convertView = audioNodeBinding.getRoot();
         }
         return convertView;
     }
@@ -102,6 +113,103 @@ public class NodeListViewAdapter extends ArrayAdapter<ContentNode> {
                         return true;
                     } else if (item.getItemId() == R.id.menu_item_delete) {
                         showDeleteConfirmationDialog(textNode.getAlbum(), textNode.getId());
+                        return true;
+                    }
+                    return false;
+                });
+
+                // Show the popup menu
+                popupMenu.show();
+                return false;
+            });
+        }
+    }
+
+    private void initializeAudioNode(AudioNode audioNode, AudioNodeBinding audioNodeBinding) {
+        audioNodeBinding.audioDurationTextView.setText(audioNode.getDuration());
+        audioNodeBinding.textView.setText(audioNode.getText());
+        audioNodeBinding.author.setText(audioNode.getUser().getName());
+        audioNodeBinding.messageDate.setText(audioNode.getMessageDate());
+
+        // Create a handler to update the SeekBar progress
+
+        Handler handler = new Handler();
+
+
+        StorageReference storageRef = FirebaseStorage.getInstance().getReference().child("" + audioNode.getAlbum() + "/" + audioNode.getAudioUrl());
+        File audioFile = new File( getContext().getExternalCacheDir().getAbsolutePath() + audioNode.getAudioUrl() );
+        MediaPlayer mediaPlayer = new MediaPlayer();
+
+        storageRef.getFile(audioFile).addOnSuccessListener(taskSnapshot -> {
+            // File downloaded successfully, now set up MediaPlayer with the local file
+            try {
+
+                mediaPlayer.setDataSource(audioFile.getAbsolutePath());
+                mediaPlayer.prepare();
+
+                Log.e("AudioNode", "File download success");
+                // Log.e("AudioNode", "initializeAudioNode : " + audioNode.getDuration());
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }).addOnFailureListener(exception -> {
+            // Handle failed download
+            Log.e("AudioNode", "File download failed: " + exception.getMessage());
+        });
+
+        Runnable updateProgressRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (mediaPlayer != null && mediaPlayer.isPlaying()) {
+                    // Get the current position and duration
+                    int currentPosition = mediaPlayer.getCurrentPosition();
+                    int totalDuration = mediaPlayer.getDuration();
+
+                    // Calculate the progress percentage
+                    int progress = (int) (((float) currentPosition / totalDuration) * 100);
+
+                    // Update the SeekBar progress
+                    audioNodeBinding.progressBar.setProgress(progress);
+
+                    // Schedule the next update after a delay (e.g., 500 milliseconds)
+                    handler.postDelayed(this, 500);
+                }
+            }
+        };
+
+
+
+        audioNodeBinding.playPauseButton.setOnClickListener(v -> {
+            if (mediaPlayer.isPlaying()) {
+                // If MediaPlayer is playing, pause it
+                mediaPlayer.pause();
+                handler.removeCallbacks(updateProgressRunnable);
+
+
+                audioNodeBinding.playPauseButton.setImageResource(R.drawable.ic_home_black_24dp);
+            } else {
+                // If MediaPlayer is not playing, start playing
+                mediaPlayer.start();
+                // Start updating the SeekBar progress
+                handler.postDelayed(updateProgressRunnable, 0);
+                audioNodeBinding.playPauseButton.setImageResource(R.drawable.ic_home_black_24dp);
+            }
+        });
+
+
+
+        //Log.e("AudioNode", "initializeAudioNode : " + audioNode.getDuration());
+        if (audioNode.getUser().getUid().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
+            audioNodeBinding.textView.setOnLongClickListener(v1 -> {
+                PopupMenu popupMenu = new PopupMenu(getContext(), v1);
+                popupMenu.inflate(R.menu.album_settings_menu); // Create a menu resource file (res/menu/album_settings_menu.xml)
+                // Handle menu item clicks
+                popupMenu.setOnMenuItemClickListener(item -> {
+                    if (item.getItemId() == R.id.menu_item_edit) {
+                        return true;
+                    } else if (item.getItemId() == R.id.menu_item_delete) {
+                        showDeleteConfirmationDialog(audioNode.getAlbum(), audioNode.getId());
                         return true;
                     }
                     return false;
