@@ -13,14 +13,12 @@ import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.Chronometer;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,21 +33,19 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicReference;
 import java.io.File;
 
 import fr.eurecom.appmemorable.databinding.ActivityNodesBinding;
-import fr.eurecom.appmemorable.models.Album;
 import fr.eurecom.appmemorable.models.AudioNode;
 import fr.eurecom.appmemorable.models.ConcreteNode;
 import fr.eurecom.appmemorable.models.ContentNode;
@@ -134,8 +130,10 @@ public class NodesActivity extends AppCompatActivity {
                 if (snapshot.exists() && snapshot.hasChildren()) {
                     for (DataSnapshot nodeSnapshot : snapshot.getChildren()) {
                         ConcreteNode concreteNode = nodeSnapshot.getValue(ConcreteNode.class);
+
                         if (concreteNode != null) {
                             ContentNode node = concreteNode.IntoContentNode();
+
                             node.setId(nodeSnapshot.getKey());
                             nodes.add(node);
                         }
@@ -202,9 +200,12 @@ public class NodesActivity extends AppCompatActivity {
                     String audioUrl = UUID.randomUUID().toString();
                     audioFilePath = getExternalCacheDir().getAbsolutePath() + audioUrl;
                     Log.e("NodesActivity", "audiofilePath: "+audioFilePath);
+                    final String[] duration = {null};
 
                     btnInsert.setOnClickListener(v1 -> {
                         if(audioFile != null){
+
+
 
                             StorageReference storageRef = FirebaseStorage.getInstance().getReference();
                             StorageReference audioRef = storageRef.child(""+albumKey+"/"+audioUrl);
@@ -213,7 +214,7 @@ public class NodesActivity extends AppCompatActivity {
                                 @Override
                                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
 
-                                    addNodeToAlbum(new AudioNode(albumKey, LocalDateTime.now().toString(), null, null), albumKey);
+                                    NodesActivity.this.addNodeToAlbum(new AudioNode(albumKey, LocalDateTime.now().toString(), null, null, audioUrl, duration[0]), albumKey);
                                     Toast.makeText(NodesActivity.this,"Audio added", Toast.LENGTH_SHORT).show();
                                 }
                             }).addOnFailureListener(new OnFailureListener() {
@@ -223,7 +224,6 @@ public class NodesActivity extends AppCompatActivity {
                                     Toast.makeText(NodesActivity.this, "Something went wrong", Toast.LENGTH_SHORT).show();
                                 }
                             });
-
 
                             dialog.dismiss();
                         }else{
@@ -258,6 +258,10 @@ public class NodesActivity extends AppCompatActivity {
                         // You can stop recording audio here
                         stopRecording();
                         chronometerRecording.stop();
+                        long elapsedSeconds = (SystemClock.elapsedRealtime() - chronometerRecording.getBase())/ 1000;
+                        String time = String.format(Locale.getDefault(), "%02d:%02d", (elapsedSeconds % 3600) / 60, elapsedSeconds % 60);
+                        duration[0] = time;
+
                         btnStartRecording.setVisibility(View.GONE);
                         btnStopRecording.setVisibility(View.GONE);
                         btnDeleteRecording.setVisibility(View.VISIBLE);
@@ -330,8 +334,8 @@ public class NodesActivity extends AppCompatActivity {
             mediaRecorder = new MediaRecorder();
             //audioFilePath = getExternalCacheDir().getAbsolutePath() + "/recorded_audio.3gp";
             mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-            mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-            mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+            mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+            mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
             mediaRecorder.setOutputFile(audioFilePath);
 
             mediaRecorder.prepare();
