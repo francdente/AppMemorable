@@ -71,22 +71,23 @@
 
         <ImageButton
             android:id="@+id/playPauseButton"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_marginEnd="283dp"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="253dp"
             android:layout_toStartOf="@+id/audioDurationTextView"
-            android:background="?android:attr/selectableItemBackground"
-            android:src="@drawable/ic_home_black_24dp" />
+            android:background="@android:color/transparent"
+            android:src="@drawable/play_button_svgrepo_com" />
 
         <TextView
             android:id="@+id/audioDurationTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="00:00"
-            android:textSize="14sp"
-            android:textColor="#888888"
             android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"/>
+            android:layout_centerVertical="true"
+            android:text="00:00"
+            android:textColor="#888888"
+            android:textSize="16sp" />
 
 
 
@@ -95,7 +96,8 @@
             android:id="@+id/progressBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="50dp"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="70dp"
             android:layout_marginTop="20dp"
             android:layout_marginEnd="50dp"
             android:layout_marginBottom="8dp"

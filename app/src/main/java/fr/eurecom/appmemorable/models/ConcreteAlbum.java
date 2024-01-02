@@ -14,6 +14,8 @@ public class ConcreteAlbum {
     private List<User> users = new ArrayList<>();
     private User owner;
 
+    private String albumCoverUrl;
+
     public ConcreteAlbum() {
     }
 
@@ -23,6 +25,7 @@ public class ConcreteAlbum {
         this.creationDate = album.getCreationDate().toString();
         this.users = album.getUsers();
         this.owner = album.getOwner();
+        this.albumCoverUrl = album.getAlbumCoverUrl();
         for (Map.Entry<String, ContentNode> entry : album.getNodes().entrySet()) {
             String key = entry.getKey();
             ContentNode node = entry.getValue();
@@ -38,7 +41,7 @@ public class ConcreteAlbum {
             node.setId(key);
             nodes.put(key, node);
         }
-        Album album = new Album(this.title, nodes, this.users, LocalDateTime.parse(this.creationDate), this.owner);
+        Album album = new Album(this.title, nodes, this.users, LocalDateTime.parse(this.creationDate), this.owner, this.albumCoverUrl);
         album.setId(this.id);
         return album;
     }
@@ -89,5 +92,13 @@ public class ConcreteAlbum {
 
     public void setOwner(User owner) {
         this.owner = owner;
+    }
+
+    public String getAlbumCoverUrl() {
+        return albumCoverUrl;
+    }
+
+    public void setAlbumCoverUrl(String albumCoverUrl) {
+        this.albumCoverUrl = albumCoverUrl;
     }
 }

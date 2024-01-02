@@ -21,11 +21,29 @@
         android:layout_marginTop="16dp"
         android:text="Cancel"/>
 
+    <Button
+        android:id="@+id/btnAddAlbumCover"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/btnCancel"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:text="Add cover"/>
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="wrap_content"
+        android:layout_height="200dp"
+        android:layout_below="@id/btnInsert"
+        android:scaleType="centerCrop"
+        android:visibility="gone"
+        />
+
     <EditText
         android:id="@+id/editAlbumName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/btnInsert"
+        android:layout_below="@id/imageView"
         android:textCursorDrawable="@drawable/custom_cursor"
         style="@style/ThemeOverlay.Material3.TextInputEditText.OutlinedBox"
         android:hint="Album Name"/>

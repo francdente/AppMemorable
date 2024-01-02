@@ -83,7 +83,7 @@ public class NodesActivity extends AppCompatActivity {
                 if(result.getResultCode() == RESULT_OK){
                     if(result.getData() != null){
                         image = result.getData().getData();
-                        StorageReference storageRef = FirebaseStorage.getInstance("gs://appmemorable-bb5f9.appspot.com").getReference();
+                        StorageReference storageRef = FirebaseStorage.getInstance().getReference();
                         String randomUrl = UUID.randomUUID().toString();
                         StorageReference imageRef = storageRef.child(""+albumKey+"/"+randomUrl);
                         imageRef.putFile(image).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {

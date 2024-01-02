@@ -1,6 +1,10 @@
 package fr.eurecom.appmemorable.ui.home;
 
+import static android.app.Activity.RESULT_OK;
+
 import android.app.Dialog;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -10,15 +14,23 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -26,19 +38,25 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
+import fr.eurecom.appmemorable.NodesActivity;
 import fr.eurecom.appmemorable.R;
 import fr.eurecom.appmemorable.databinding.FragmentHomeBinding;
 import fr.eurecom.appmemorable.models.Album;
 import fr.eurecom.appmemorable.models.ConcreteAlbum;
 import fr.eurecom.appmemorable.models.ContentNode;
+import fr.eurecom.appmemorable.models.ImageNode;
 import fr.eurecom.appmemorable.models.User;
 import fr.eurecom.appmemorable.ui.home.adapters.AlbumListViewAdapter;
 import fr.eurecom.appmemorable.ui.home.adapters.SelectedUsersAdapter;
@@ -48,6 +66,9 @@ public class HomeFragment extends Fragment {
     private AlbumListViewAdapter albumListViewAdapter;
     private FragmentHomeBinding binding;
     private boolean filterShown = false;
+    ActivityResultLauncher<Intent> activityResultLauncher;
+    Uri albumCover;
+    ImageView albumCoverImageView;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentHomeBinding.inflate(inflater, container, false);
@@ -62,6 +83,20 @@ public class HomeFragment extends Fragment {
         initAlbumListView();
         initFilterAlbum();
         initAddAlbumButton();
+
+        activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
+            @Override
+            public void onActivityResult(ActivityResult result) {
+                if(result.getResultCode() == RESULT_OK){
+                    if(result.getData() != null){
+                        albumCover = result.getData().getData();
+                        albumCoverImageView.setImageURI(albumCover);
+                        albumCoverImageView.setVisibility(View.VISIBLE);
+                    }
+                }
+
+            }
+        });
 
     }
 
@@ -216,12 +251,24 @@ public class HomeFragment extends Fragment {
                 //Add the current users to the selected users that will share the album
                 User owner = new User(usr.getEmail(), usr.getDisplayName(), usr.getUid());
                 selectedUsers.add(owner);
-                this.addAlbum(new Album(albumName, new HashMap<>(), selectedUsers, LocalDateTime.now(), owner), selectedUsers);
+                String albumCoverUrl = UUID.randomUUID().toString();
+                Album newAlbum = new Album(albumName, new HashMap<>(), selectedUsers, LocalDateTime.now(), owner, albumCoverUrl);
+                this.addAlbum(newAlbum, selectedUsers);
+                this.addAlbumCover(newAlbum);
                 dialog.dismiss();
             });
             dialog.findViewById(R.id.btnCancel).setOnClickListener(v1 -> {
                 dialog.dismiss();
             });
+
+            dialog.findViewById(R.id.btnAddAlbumCover).setOnClickListener(v1 -> {
+
+                albumCoverImageView = dialog.findViewById(R.id.imageView);
+                Intent intent = new Intent(Intent.ACTION_PICK);
+                intent.setType("image/*");
+                activityResultLauncher.launch(intent);
+            });
+
             dialog.show();
         });
     }
@@ -242,5 +289,25 @@ public class HomeFragment extends Fragment {
             DatabaseReference ref = userAlbums.child(users.get(i).getUid()).child(album.getId());
             ref.setValue(new ConcreteAlbum(album));
         }
+    }
+
+    private void addAlbumCover(Album album){
+        Log.e("addAlbum", album.getOwner().getEmail());
+        StorageReference albumCoverRef = FirebaseStorage.getInstance().getReference().child(""+album.getId()+"/"+album.getAlbumCoverUrl());;
+
+        albumCoverRef.putFile(albumCover).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+
+                Toast.makeText(getContext(), "Cover uploaded successfully", Toast.LENGTH_SHORT).show();
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+
+                Toast.makeText(getContext(), "Something went wrong", Toast.LENGTH_SHORT).show();
+            }
+        });
+
     }
 }

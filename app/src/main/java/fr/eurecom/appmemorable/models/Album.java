@@ -14,16 +14,18 @@ public class Album {
     private List<User> users;
     private User owner;
     private LocalDateTime creationDate;
+    private String albumCoverUrl;
 
     public Album(){
         nodes = new HashMap<>();
     }
-    public Album(String title, HashMap<String, ContentNode> nodes, List<User> users, LocalDateTime creationDate, User owner) {
+    public Album(String title, HashMap<String, ContentNode> nodes, List<User> users, LocalDateTime creationDate, User owner, String albumCoverUrl) {
         this.nodes = nodes;
         this.title = title;
         this.creationDate = creationDate;
         this.users = users;
         this.owner = owner;
+        this.albumCoverUrl = albumCoverUrl;
     }
 
     public HashMap<String, ContentNode> getNodes() {
@@ -112,5 +114,10 @@ public class Album {
 
     public void setOwner(User owner) {
         this.owner = owner;
+    }
+
+    public String getAlbumCoverUrl() {return albumCoverUrl;}
+    public void setAlbumCoverUrl(String albumCoverUrl) {
+        this.albumCoverUrl = albumCoverUrl;
     }
 }

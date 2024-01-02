@@ -178,7 +178,12 @@ public class NodeListViewAdapter extends ArrayAdapter<ContentNode> {
             }
         };
 
-
+        mediaPlayer.setOnCompletionListener(mp -> {
+            // Update UI when playback is completed
+            handler.removeCallbacks(updateProgressRunnable);
+            audioNodeBinding.playPauseButton.setImageResource(R.drawable.play_button_svgrepo_com);
+            audioNodeBinding.progressBar.setProgress(0);
+        });
 
         audioNodeBinding.playPauseButton.setOnClickListener(v -> {
             if (mediaPlayer.isPlaying()) {
@@ -187,13 +192,14 @@ public class NodeListViewAdapter extends ArrayAdapter<ContentNode> {
                 handler.removeCallbacks(updateProgressRunnable);
 
 
-                audioNodeBinding.playPauseButton.setImageResource(R.drawable.ic_home_black_24dp);
+                audioNodeBinding.playPauseButton.setImageResource(R.drawable.play_button_svgrepo_com);
             } else {
                 // If MediaPlayer is not playing, start playing
                 mediaPlayer.start();
+
                 // Start updating the SeekBar progress
                 handler.postDelayed(updateProgressRunnable, 0);
-                audioNodeBinding.playPauseButton.setImageResource(R.drawable.ic_home_black_24dp);
+                audioNodeBinding.playPauseButton.setImageResource(R.drawable.pause_button_svgrepo_com);
             }
         });
 

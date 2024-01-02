@@ -15,8 +15,11 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.PopupMenu;
 
+import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -60,6 +63,20 @@ public class AlbumListViewAdapter extends ArrayAdapter<Album> {
         albumItemBinding = AlbumItemBinding.inflate(LayoutInflater.from(getContext()));
         albumItemBinding.textViewAlbumTitle.setText(album.getTitle());
         albumItemBinding.albumDate.setText(album.getTimeOfCreation());
+
+        StorageReference storageRef = FirebaseStorage.getInstance().getReference().child("" + album.getId() + "/" + album.getAlbumCoverUrl());
+        if(storageRef != null) {
+
+            Glide
+                    .with(this.getContext())
+                    .load(storageRef)
+                    .centerCrop()
+                    .into(albumItemBinding.imageViewAlbum);
+
+        }
+
+
+
         //Handle the open album button to start a new NodesActivity
         initOpenAlbumButton(album);
         //Handle popup menu for editing/deleting the album
