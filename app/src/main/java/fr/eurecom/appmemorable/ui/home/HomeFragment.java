@@ -212,7 +212,7 @@ public class HomeFragment extends Fragment {
             listView.setAdapter(userListAdapter);
 
 
-            FirebaseDatabase.getInstance().getReference("users").addListenerForSingleValueEvent(new ValueEventListener() {
+            FirebaseDatabase.getInstance().getReference("friends/"+FirebaseAuth.getInstance().getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     List<User> newUsers = new ArrayList<>();

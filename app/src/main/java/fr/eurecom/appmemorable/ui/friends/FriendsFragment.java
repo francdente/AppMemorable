@@ -9,6 +9,7 @@ import android.widget.AutoCompleteTextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -50,7 +51,35 @@ private FriendListViewAdapter friendListViewAdapter;
         super.onViewCreated(view, savedInstanceState);
         initFriendSearch();
         initFriendRequestListView();
+        initFriendListView();
 
+    }
+
+    private void initFriendListView(){
+        friendListViewAdapter = new FriendListViewAdapter(getContext(), new ArrayList<>());
+        FirebaseDatabase.getInstance().getReference("friends/"+ FirebaseAuth.getInstance().getCurrentUser().getUid()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                List<User> newUsers = new ArrayList<>();
+                // Check if snapshot exists and has children
+                if (snapshot.exists() && snapshot.hasChildren()) {
+                    for (DataSnapshot userSnapshot : snapshot.getChildren()) {
+                        User user = userSnapshot.getValue(User.class);
+                        if (user != null) {
+                            newUsers.add(user);
+                        }
+                    }
+                }
+                friendListViewAdapter.clear();
+                friendListViewAdapter.addAll(newUsers);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+        binding.listViewFriends.setAdapter(friendListViewAdapter);
     }
 
     private void initFriendRequestListView() {
@@ -115,8 +144,22 @@ private FriendListViewAdapter friendListViewAdapter;
         // Handle item click in the AutoCompleteTextView
         autoCompleteTextView.setOnItemClickListener((parent, v1, p, id) -> {
             User selectedUser = (User) parent.getItemAtPosition(p);
-            addFriendRequest(selectedUser);
+            showConfirmationDialog(selectedUser);
         });
+    }
+
+    private void showConfirmationDialog(User selectedUser) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle("Send friend request")
+                .setMessage("Do you want to send a friend request to " + selectedUser.getEmail() + "?")
+                .setPositiveButton("Send", (dialog, which) -> {
+                    // User confirmed deletion, proceed with deletion
+                    addFriendRequest(selectedUser);
+                })
+                .setNegativeButton("Cancel", (dialog, which) -> {
+                    // User canceled the deletion, do nothing
+                })
+                .show();
     }
 
     @Override
@@ -131,7 +174,6 @@ private FriendListViewAdapter friendListViewAdapter;
         String currUsername = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
         User currentUser = new User(currEmail, currUsername, currUid);
         FirebaseDatabase.getInstance().getReference("friendRequests/"+ user.getUid() + "/"+ currentUser.getUid()).setValue(currentUser);
-
     }
 
 

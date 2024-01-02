@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="8dp">
+
+    <!-- Friend's Profile Picture -->
+    <ImageView
+        android:id="@+id/imageViewProfilePicture"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:src="@drawable/user_alt_1_svgrepo_com"
+        android:scaleType="centerCrop"
+        android:layout_gravity="center"/>
+
+    <!-- Friend's Name and Remove Button -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginStart="8dp">
+
+        <!-- Friend's Name -->
+        <TextView
+            android:id="@+id/textViewFriendName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Friend's Name"
+            android:textSize="14sp"
+            android:layout_gravity="center"/>
+
+        <!-- Remove Button -->
+        <Button
+            android:id="@+id/buttonRemoveFriend"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Remove"
+            android:layout_marginTop="4dp"/>
+    </LinearLayout>
+</LinearLayout>

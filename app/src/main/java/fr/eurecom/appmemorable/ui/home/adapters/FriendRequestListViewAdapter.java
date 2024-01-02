@@ -33,16 +33,21 @@ public class FriendRequestListViewAdapter extends ArrayAdapter<User> {
         friendRequestItemBinding.textViewFriendName.setText(user.getEmail());
         friendRequestItemBinding.buttonAccept.setOnClickListener(v -> {
             addFriend(user);
+            deleteFriendRequest(user);
         });
         friendRequestItemBinding.buttonCancel.setOnClickListener(v -> {
-            FirebaseDatabase.getInstance().getReference("friendRequests/"+ FirebaseAuth.getInstance().getCurrentUser().getUid()).child(user.getUid()).removeValue();
+            deleteFriendRequest(user);
         });
         convertView = friendRequestItemBinding.getRoot();
         return convertView;
 
     }
 
+    private void deleteFriendRequest(User user) {
+        FirebaseDatabase.getInstance().getReference("friendRequests/"+ FirebaseAuth.getInstance().getCurrentUser().getUid()).child(user.getUid()).removeValue();
+    }
     private void addFriend(User user) {
         FirebaseDatabase.getInstance().getReference("friends/"+ FirebaseAuth.getInstance().getCurrentUser().getUid()+"/"+user.getUid()).setValue(user);
+        FirebaseDatabase.getInstance().getReference("friends/"+user.getUid()+"/"+FirebaseAuth.getInstance().getCurrentUser().getUid()).setValue(new User(FirebaseAuth.getInstance().getCurrentUser().getEmail(), FirebaseAuth.getInstance().getCurrentUser().getDisplayName(), FirebaseAuth.getInstance().getCurrentUser().getUid()));
     }
 }
