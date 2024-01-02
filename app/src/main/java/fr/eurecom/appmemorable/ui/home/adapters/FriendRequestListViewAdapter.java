@@ -18,10 +18,10 @@ import fr.eurecom.appmemorable.databinding.AlbumItemBinding;
 import fr.eurecom.appmemorable.databinding.FriendRequestItemBinding;
 import fr.eurecom.appmemorable.models.User;
 
-public class FriendRequestListViewAdapter extends ArrayAdapter<String> {
+public class FriendRequestListViewAdapter extends ArrayAdapter<User> {
 
     FriendRequestItemBinding friendRequestItemBinding;
-    public FriendRequestListViewAdapter(@NonNull Context context, List<String> friendRequests) {
+    public FriendRequestListViewAdapter(@NonNull Context context, List<User> friendRequests) {
         super(context, 0, friendRequests);
     }
 
@@ -29,20 +29,20 @@ public class FriendRequestListViewAdapter extends ArrayAdapter<String> {
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
         friendRequestItemBinding = FriendRequestItemBinding.inflate(LayoutInflater.from(getContext()));
-        String userEmail = getItem(position);
-        friendRequestItemBinding.textViewFriendName.setText(userEmail);
+        User user = getItem(position);
+        friendRequestItemBinding.textViewFriendName.setText(user.getEmail());
         friendRequestItemBinding.buttonAccept.setOnClickListener(v -> {
-            addFriend(userEmail);
+            addFriend(user);
         });
         friendRequestItemBinding.buttonCancel.setOnClickListener(v -> {
-            FirebaseDatabase.getInstance().getReference("friendRequests/"+ FirebaseAuth.getInstance().getCurrentUser().getUid()).child(userEmail).removeValue();
+            FirebaseDatabase.getInstance().getReference("friendRequests/"+ FirebaseAuth.getInstance().getCurrentUser().getUid()).child(user.getUid()).removeValue();
         });
         convertView = friendRequestItemBinding.getRoot();
         return convertView;
 
     }
 
-    private void addFriend(String email) {
-        FirebaseDatabase.getInstance().getReference("friends/"+ FirebaseAuth.getInstance().getCurrentUser().getUid()).push().setValue(email);
+    private void addFriend(User user) {
+        FirebaseDatabase.getInstance().getReference("friends/"+ FirebaseAuth.getInstance().getCurrentUser().getUid()+"/"+user.getUid()).setValue(user);
     }
 }

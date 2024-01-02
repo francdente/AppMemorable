@@ -58,11 +58,11 @@ private FriendListViewAdapter friendListViewAdapter;
         FirebaseDatabase.getInstance().getReference("friendRequests/"+ FirebaseAuth.getInstance().getCurrentUser().getUid()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                List<String> newUsers = new ArrayList<>();
+                List<User> newUsers = new ArrayList<>();
                 // Check if snapshot exists and has children
                 if (snapshot.exists() && snapshot.hasChildren()) {
                     for (DataSnapshot userSnapshot : snapshot.getChildren()) {
-                        String user = userSnapshot.getValue(String.class);
+                        User user = userSnapshot.getValue(User.class);
                         if (user != null) {
                             newUsers.add(user);
                         }
@@ -126,7 +126,12 @@ private FriendListViewAdapter friendListViewAdapter;
     }
 
     private void addFriendRequest(User user) {
-        FirebaseDatabase.getInstance().getReference("friendRequests/"+user.getUid()).push().setValue(FirebaseAuth.getInstance().getCurrentUser().getEmail());
+        String currUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        String currEmail = FirebaseAuth.getInstance().getCurrentUser().getEmail();
+        String currUsername = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
+        User currentUser = new User(currEmail, currUsername, currUid);
+        FirebaseDatabase.getInstance().getReference("friendRequests/"+ user.getUid() + "/"+ currentUser.getUid()).setValue(currentUser);
+
     }
 
 

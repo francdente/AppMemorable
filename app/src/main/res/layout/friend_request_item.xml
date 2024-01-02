@@ -4,13 +4,13 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:padding="16dp">
+    android:padding="6dp">
 
     <!-- Friend's Profile Picture -->
     <ImageView
         android:id="@+id/imageViewProfilePicture"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
         android:src="@drawable/user_alt_1_svgrepo_com"
         android:scaleType="centerCrop"
         android:layout_gravity="center"/>
@@ -20,7 +20,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:layout_marginStart="16dp">
+        android:layout_marginStart="8dp">
 
         <!-- Friend's Name -->
         <TextView
@@ -28,7 +28,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Friend's Name"
-            android:textSize="18sp"
+            android:textSize="14sp"
             android:layout_gravity="center"/>
 
         <!-- Buttons: Accept and Cancel -->
@@ -36,7 +36,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginTop="8dp">
+            android:layout_marginTop="4dp">
 
             <!-- Accept Button -->
             <Button
@@ -45,7 +45,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Accept"
-                android:layout_marginEnd="8dp"/>
+                android:layout_marginEnd="4dp"/>
 
             <!-- Cancel Button -->
             <Button
@@ -54,7 +54,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Cancel"
-                android:layout_marginStart="8dp"/>
+                android:layout_marginStart="4dp"/>
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>
