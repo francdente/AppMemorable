@@ -168,6 +168,13 @@ public class AlbumListViewAdapter extends ArrayAdapter<Album> {
                 .show();
     }
     private void deleteAlbum(Album album) {
+        //Delete from storage all elements relatives to the album.
+        FirebaseStorage.getInstance().getReference().child("" + album.getId() + "/").listAll().addOnSuccessListener(listResult -> {
+            for (StorageReference ref : listResult.getItems()) {
+                Log.e("deleteAlbum", ref.toString());
+                ref.delete();
+            }
+        });
         //Delete from albums
         FirebaseDatabase.getInstance().getReference("albums/" + album.getId()).removeValue();
         Log.e("deleteAlbum", "" + album.getUsers().size());

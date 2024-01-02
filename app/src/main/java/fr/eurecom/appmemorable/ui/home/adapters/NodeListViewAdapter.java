@@ -86,7 +86,7 @@ public class NodeListViewAdapter extends ArrayAdapter<ContentNode> {
                     if (item.getItemId() == R.id.menu_item_edit) {
                         return true;
                     } else if (item.getItemId() == R.id.menu_item_delete) {
-                        showDeleteConfirmationDialog(imageNode.getAlbum(), imageNode.getId());
+                        showDeleteConfirmationDialog(imageNode.getAlbum(), imageNode);
                         return true;
                     }
                     return false;
@@ -112,7 +112,7 @@ public class NodeListViewAdapter extends ArrayAdapter<ContentNode> {
                     if (item.getItemId() == R.id.menu_item_edit) {
                         return true;
                     } else if (item.getItemId() == R.id.menu_item_delete) {
-                        showDeleteConfirmationDialog(textNode.getAlbum(), textNode.getId());
+                        showDeleteConfirmationDialog(textNode.getAlbum(), textNode);
                         return true;
                     }
                     return false;
@@ -215,7 +215,7 @@ public class NodeListViewAdapter extends ArrayAdapter<ContentNode> {
                     if (item.getItemId() == R.id.menu_item_edit) {
                         return true;
                     } else if (item.getItemId() == R.id.menu_item_delete) {
-                        showDeleteConfirmationDialog(audioNode.getAlbum(), audioNode.getId());
+                        showDeleteConfirmationDialog(audioNode.getAlbum(), audioNode);
                         return true;
                     }
                     return false;
@@ -228,19 +228,26 @@ public class NodeListViewAdapter extends ArrayAdapter<ContentNode> {
         }
     }
 
-    private void deleteNode(String albumId, String nodeId) {
+    private void deleteNode(String albumId, ContentNode contentNode) {
         //TODO: delete the image/audio from cloud storage if it is an image/audio node
-        DatabaseReference node = FirebaseDatabase.getInstance().getReference("albums/" + albumId + "/" + nodeId);
+        if (contentNode instanceof ImageNode) {
+            StorageReference storageRef = FirebaseStorage.getInstance().getReference().child("" + albumId + "/" + ((ImageNode) contentNode).getImage());
+            storageRef.delete();
+        } else if (contentNode instanceof AudioNode) {
+            StorageReference storageRef = FirebaseStorage.getInstance().getReference().child("" + albumId + "/" + ((AudioNode) contentNode).getAudioUrl());
+            storageRef.delete();
+        }
+        DatabaseReference node = FirebaseDatabase.getInstance().getReference("albums/" + albumId + "/" + contentNode.getId());
         node.removeValue();
     }
 
-    private void showDeleteConfirmationDialog(String albumId, String nodeId) {
+    private void showDeleteConfirmationDialog(String albumId, ContentNode contentNode) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle("Delete Node")
                 .setMessage("Are you sure you want to delete this node?")
                 .setPositiveButton("Delete", (dialog, which) -> {
                     // User confirmed deletion, proceed with deletion
-                    deleteNode(albumId, nodeId);
+                    deleteNode(albumId, contentNode);
                 })
                 .setNegativeButton("Cancel", (dialog, which) -> {
                     // User canceled the deletion, do nothing

@@ -126,7 +126,8 @@ public class HomeFragment extends Fragment {
                 Comparator<Album> comparator;
                 if (position == 0) {
                     Log.e("sort", "by date");
-                    comparator = Comparator.comparing(Album::getTimeOfCreation);
+                    //Comparator using LocalDateTime parsed from creationDate of album
+                    comparator = Comparator.comparing(Album::getCreationDate);
                 } else {
                     Log.e("sort", "by title");
                     //Don't count uppercase and lowercase
