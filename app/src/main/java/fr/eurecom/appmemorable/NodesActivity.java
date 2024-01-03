@@ -195,6 +195,7 @@ public class NodesActivity extends AppCompatActivity {
                     Button btnStopRecording = dialog.findViewById(R.id.btnStopRecording);
                     Button btnDeleteRecording = dialog.findViewById(R.id.btnDeleteRecording);
 
+
                     chronometerRecording.setBase(SystemClock.elapsedRealtime());
                     chronometerRecording.setText("00:00");
                     String audioUrl = UUID.randomUUID().toString();
@@ -206,7 +207,7 @@ public class NodesActivity extends AppCompatActivity {
                         if(audioFile != null){
 
 
-
+                            String text = ((TextView)dialog.findViewById(R.id.editText)).getText().toString();
                             StorageReference storageRef = FirebaseStorage.getInstance().getReference();
                             StorageReference audioRef = storageRef.child(""+albumKey+"/"+audioUrl);
 
@@ -214,7 +215,7 @@ public class NodesActivity extends AppCompatActivity {
                                 @Override
                                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
 
-                                    NodesActivity.this.addNodeToAlbum(new AudioNode(albumKey, LocalDateTime.now().toString(), null, null, audioUrl, duration[0]), albumKey);
+                                    NodesActivity.this.addNodeToAlbum(new AudioNode(albumKey, LocalDateTime.now().toString(), null, text, audioUrl, duration[0]), albumKey);
                                     Toast.makeText(NodesActivity.this,"Audio added", Toast.LENGTH_SHORT).show();
                                 }
                             }).addOnFailureListener(new OnFailureListener() {
@@ -245,7 +246,7 @@ public class NodesActivity extends AppCompatActivity {
                         // You can start recording audio here
 
 
-
+                        //chronometerRecording.setBase(SystemClock.elapsedRealtime());
                         chronometerRecording.start();
                         startRecording();
                         btnStartRecording.setVisibility(View.GONE);

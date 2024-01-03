@@ -43,6 +43,12 @@
         android:text="Delete Recording"
         android:visibility="gone" />
 
+    <EditText
+        android:id="@+id/editText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Text"/>
+
     <!-- Insert Button -->
     <Button
         android:id="@+id/btnInsert"

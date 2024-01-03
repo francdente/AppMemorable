@@ -138,14 +138,64 @@ public class NodeListViewAdapter extends ArrayAdapter<ContentNode> {
 
         StorageReference storageRef = FirebaseStorage.getInstance().getReference().child("" + audioNode.getAlbum() + "/" + audioNode.getAudioUrl());
         File audioFile = new File( getContext().getExternalCacheDir().getAbsolutePath() + audioNode.getAudioUrl() );
-        MediaPlayer mediaPlayer = new MediaPlayer();
+
 
         storageRef.getFile(audioFile).addOnSuccessListener(taskSnapshot -> {
             // File downloaded successfully, now set up MediaPlayer with the local file
             try {
 
+                MediaPlayer mediaPlayer = new MediaPlayer();
                 mediaPlayer.setDataSource(audioFile.getAbsolutePath());
                 mediaPlayer.prepare();
+                final int[] currentPosition = {0};
+
+                Runnable updateProgressRunnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mediaPlayer != null && mediaPlayer.isPlaying()) {
+                            // Get the current position and duration
+                            currentPosition[0] += 500;
+                            int totalDuration = mediaPlayer.getDuration();
+
+                            // Calculate the progress percentage
+                            int progress = (int) (((float) currentPosition[0] / totalDuration) * 100);
+
+
+                            // Update the SeekBar progress
+                            audioNodeBinding.progressBar.setProgress(progress);
+
+                            // Schedule the next update after a delay (e.g., 500 milliseconds)
+                            handler.postDelayed(this, 500);
+                        }
+                    }
+                };
+
+                mediaPlayer.setOnCompletionListener(mp -> {
+                    // Update UI when playback is completed
+                    handler.removeCallbacks(updateProgressRunnable);
+                    currentPosition[0] = 0;
+                    audioNodeBinding.playPauseButton.setImageResource(R.drawable.play_button_svgrepo_com);
+                    audioNodeBinding.progressBar.setProgress(0);
+                });
+
+
+                audioNodeBinding.playPauseButton.setOnClickListener(v -> {
+                    if (mediaPlayer.isPlaying()) {
+                        // If MediaPlayer is playing, pause it
+                        mediaPlayer.pause();
+                        handler.removeCallbacks(updateProgressRunnable);
+
+                        audioNodeBinding.playPauseButton.setImageResource(R.drawable.play_button_svgrepo_com);
+                    } else {
+                        // If MediaPlayer is not playing, start playing
+                        mediaPlayer.start();
+
+                        // Start updating the SeekBar progress
+                        handler.post(updateProgressRunnable);
+                        audioNodeBinding.playPauseButton.setImageResource(R.drawable.pause_button_svgrepo_com);
+                    }
+                });
+
 
                 Log.e("AudioNode", "File download success");
                 // Log.e("AudioNode", "initializeAudioNode : " + audioNode.getDuration());
@@ -156,51 +206,6 @@ public class NodeListViewAdapter extends ArrayAdapter<ContentNode> {
         }).addOnFailureListener(exception -> {
             // Handle failed download
             Log.e("AudioNode", "File download failed: " + exception.getMessage());
-        });
-
-        Runnable updateProgressRunnable = new Runnable() {
-            @Override
-            public void run() {
-                if (mediaPlayer != null && mediaPlayer.isPlaying()) {
-                    // Get the current position and duration
-                    int currentPosition = mediaPlayer.getCurrentPosition();
-                    int totalDuration = mediaPlayer.getDuration();
-
-                    // Calculate the progress percentage
-                    int progress = (int) (((float) currentPosition / totalDuration) * 100);
-
-                    // Update the SeekBar progress
-                    audioNodeBinding.progressBar.setProgress(progress);
-
-                    // Schedule the next update after a delay (e.g., 500 milliseconds)
-                    handler.postDelayed(this, 500);
-                }
-            }
-        };
-
-        mediaPlayer.setOnCompletionListener(mp -> {
-            // Update UI when playback is completed
-            handler.removeCallbacks(updateProgressRunnable);
-            audioNodeBinding.playPauseButton.setImageResource(R.drawable.play_button_svgrepo_com);
-            audioNodeBinding.progressBar.setProgress(0);
-        });
-
-        audioNodeBinding.playPauseButton.setOnClickListener(v -> {
-            if (mediaPlayer.isPlaying()) {
-                // If MediaPlayer is playing, pause it
-                mediaPlayer.pause();
-                handler.removeCallbacks(updateProgressRunnable);
-
-
-                audioNodeBinding.playPauseButton.setImageResource(R.drawable.play_button_svgrepo_com);
-            } else {
-                // If MediaPlayer is not playing, start playing
-                mediaPlayer.start();
-
-                // Start updating the SeekBar progress
-                handler.postDelayed(updateProgressRunnable, 0);
-                audioNodeBinding.playPauseButton.setImageResource(R.drawable.pause_button_svgrepo_com);
-            }
         });
 
 
