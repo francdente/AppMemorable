@@ -83,6 +83,18 @@
             android:padding="6dp" />
     </LinearLayout>
 
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="67dp"
+        android:layout_height="64dp"
+        android:layout_gravity="center|center_vertical"
+        android:layout_marginStart="160dp"
+        android:layout_marginTop="325dp"
+        android:indeterminateTint="?attr/colorPrimary"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

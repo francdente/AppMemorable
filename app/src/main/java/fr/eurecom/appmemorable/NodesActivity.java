@@ -1,5 +1,7 @@
 package fr.eurecom.appmemorable;
 
+import static android.widget.RelativeLayout.TRUE;
+
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
@@ -46,6 +48,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.io.File;
 
 import fr.eurecom.appmemorable.databinding.ActivityNodesBinding;
+import fr.eurecom.appmemorable.databinding.AddNodeBinding;
 import fr.eurecom.appmemorable.models.AudioNode;
 import fr.eurecom.appmemorable.models.ConcreteNode;
 import fr.eurecom.appmemorable.models.ContentNode;
@@ -63,7 +66,7 @@ public class NodesActivity extends AppCompatActivity {
     MediaRecorder mediaRecorder;
     String audioFilePath;
     File audioFile = null;
-    LinearProgressIndicator progress = null;
+
     Uri image;
 
     @Override
@@ -83,12 +86,16 @@ public class NodesActivity extends AppCompatActivity {
                 if(result.getResultCode() == RESULT_OK){
                     if(result.getData() != null){
                         image = result.getData().getData();
+
                         StorageReference storageRef = FirebaseStorage.getInstance().getReference();
                         String randomUrl = UUID.randomUUID().toString();
                         StorageReference imageRef = storageRef.child(""+albumKey+"/"+randomUrl);
+
+                        binding.progressBar.setVisibility(View.VISIBLE);
                         imageRef.putFile(image).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                             @Override
                             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                binding.progressBar.setVisibility(View.GONE);
                                 Dialog dialog = new Dialog(NodesActivity.this);
                                 dialog.setContentView(R.layout.add_node);
                                 dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -99,10 +106,12 @@ public class NodesActivity extends AppCompatActivity {
                                     NodesActivity.this.addNodeToAlbum(new ImageNode(albumKey, "1", null, text, randomUrl), albumKey);
                                     dialog.dismiss();
 
+
                                 });
                                 dialog.findViewById(R.id.btnCancel).setOnClickListener(v1 -> {
                                     NodesActivity.this.addNodeToAlbum(new ImageNode(albumKey, "1", null, null, randomUrl), albumKey);
                                     dialog.dismiss();
+
                                 });
                                 dialog.show();
 
@@ -111,7 +120,7 @@ public class NodesActivity extends AppCompatActivity {
                         }).addOnFailureListener(new OnFailureListener() {
                             @Override
                             public void onFailure(@NonNull Exception e) {
-
+                                binding.progressBar.setVisibility(View.GONE);
                                 Toast.makeText(NodesActivity.this, "Something went wrong", Toast.LENGTH_SHORT).show();
                             }
                         });
@@ -210,18 +219,20 @@ public class NodesActivity extends AppCompatActivity {
                             String text = ((TextView)dialog.findViewById(R.id.editText)).getText().toString();
                             StorageReference storageRef = FirebaseStorage.getInstance().getReference();
                             StorageReference audioRef = storageRef.child(""+albumKey+"/"+audioUrl);
+                            binding.progressBar.setVisibility(View.VISIBLE);
 
                             audioRef.putFile(Uri.fromFile(audioFile)).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                                 @Override
                                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
 
                                     NodesActivity.this.addNodeToAlbum(new AudioNode(albumKey, LocalDateTime.now().toString(), null, text, audioUrl, duration[0]), albumKey);
+                                    binding.progressBar.setVisibility(View.GONE);
                                     Toast.makeText(NodesActivity.this,"Audio added", Toast.LENGTH_SHORT).show();
                                 }
                             }).addOnFailureListener(new OnFailureListener() {
                                 @Override
                                 public void onFailure(@NonNull Exception e) {
-
+                                    binding.progressBar.setVisibility(View.GONE);
                                     Toast.makeText(NodesActivity.this, "Something went wrong", Toast.LENGTH_SHORT).show();
                                 }
                             });
@@ -244,7 +255,6 @@ public class NodesActivity extends AppCompatActivity {
                     btnStartRecording.setOnClickListener(v1 -> {
                         // Add logic to handle start recording button click
                         // You can start recording audio here
-
 
                         //chronometerRecording.setBase(SystemClock.elapsedRealtime());
                         chronometerRecording.start();
@@ -311,9 +321,11 @@ public class NodesActivity extends AppCompatActivity {
                     dialog.setCancelable(false);
                     dialog.getWindow().getAttributes().windowAnimations = R.style.dialog_animation;
                     dialog.findViewById(R.id.btnInsert).setOnClickListener(v1 -> {
+                        binding.progressBar.setVisibility(View.VISIBLE);
                         String text = ((TextView)dialog.findViewById(R.id.editText)).getText().toString();
                         this.addNodeToAlbum(new TextNode(albumKey, LocalDateTime.now().toString(), null, text), albumKey);
                         dialog.dismiss();
+                        binding.progressBar.setVisibility(View.GONE);
                     });
                     dialog.findViewById(R.id.btnCancel).setOnClickListener(v1 -> dialog.dismiss());
                     dialog.show();
