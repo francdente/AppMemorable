@@ -11,6 +11,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Bundle;
@@ -25,6 +27,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.canhub.cropper.CropImage;
+import com.canhub.cropper.CropImageContract;
+import com.canhub.cropper.CropImageContractOptions;
+import com.canhub.cropper.CropImageOptions;
+import com.canhub.cropper.CropImageView;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
@@ -49,6 +56,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.io.File;
 
 import fr.eurecom.appmemorable.databinding.ActivityNodesBinding;
+import fr.eurecom.appmemorable.databinding.AddImageNodeBinding;
 import fr.eurecom.appmemorable.databinding.AddNodeBinding;
 import fr.eurecom.appmemorable.models.AudioNode;
 import fr.eurecom.appmemorable.models.ConcreteNode;
@@ -69,18 +77,31 @@ public class NodesActivity extends AppCompatActivity {
     File audioFile = null;
 
     Uri image;
+    Uri croppedImage;
     ImageView imageView;
+
+    AddImageNodeBinding bindingImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getSupportActionBar().hide();
         binding = ActivityNodesBinding.inflate(getLayoutInflater());
+        bindingImage = AddImageNodeBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         String albumKey = getIntent().getStringExtra("albumKey");
         String albumName = getIntent().getStringExtra("albumName");
         nodeListViewAdapter = new NodeListViewAdapter(this, new ArrayList<>());
         binding.albumNameText.setText(albumName);
+
+        ActivityResultLauncher<CropImageContractOptions> cropImage = registerForActivityResult(new CropImageContract(), result -> {
+            if (result.isSuccessful()) {
+                croppedImage = result.getUriContent();
+                imageView.setImageURI(croppedImage);
+                imageView.setVisibility(View.VISIBLE);
+            }
+        });
+
 
         activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
             @Override
@@ -88,8 +109,19 @@ public class NodesActivity extends AppCompatActivity {
                 if(result.getResultCode() == RESULT_OK){
                     if(result.getData() != null){
                         image = result.getData().getData();
-                        imageView.setImageURI(image);
-                        imageView.setVisibility(View.VISIBLE);
+
+                        bindingImage.cropImageView.setImageUriAsync(image);
+
+                        CropImageOptions cropImageOptions = new CropImageOptions();
+                        cropImageOptions.imageSourceIncludeGallery = false;
+                        cropImageOptions.imageSourceIncludeCamera = true;
+                        cropImageOptions.cropShape = CropImageView.CropShape.RECTANGLE;
+
+                        CropImageContractOptions cropImageContractOptions = new CropImageContractOptions(image, cropImageOptions);
+                        cropImage.launch(cropImageContractOptions);
+
+
+
                         //Toast.makeText(NodesActivity.this, "Image Added", Toast.LENGTH_SHORT).show();
                     }
                 }
@@ -291,7 +323,7 @@ public class NodesActivity extends AppCompatActivity {
                             String text = ((TextView) dialog.findViewById(R.id.editDescription)).getText().toString();
 
 
-                            imageRef.putFile(image).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                            imageRef.putFile(croppedImage).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                                 @Override
                                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                                     binding.progressBar.setVisibility(View.GONE);
@@ -401,4 +433,7 @@ public class NodesActivity extends AppCompatActivity {
             audioFile = null;
         }
     }
+
+
+
 }

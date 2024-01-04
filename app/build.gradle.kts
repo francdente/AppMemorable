@@ -55,6 +55,8 @@ dependencies {
     annotationProcessor("com.github.bumptech.glide:compiler:4.14.2")
     implementation("com.github.bumptech.glide:glide:4.12.0")
 
+    implementation("com.vanniktech:android-image-cropper:4.5.0")
+
     // Add the dependency for the Firebase Authentication library
     // When NOT using the BoM, you must specify versions in Firebase library dependencies
     implementation("com.google.firebase:firebase-auth:22.3.0")
