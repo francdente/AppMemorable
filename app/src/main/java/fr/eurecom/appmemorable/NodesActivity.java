@@ -116,6 +116,10 @@ public class NodesActivity extends AppCompatActivity {
                         cropImageOptions.imageSourceIncludeGallery = false;
                         cropImageOptions.imageSourceIncludeCamera = true;
                         cropImageOptions.cropShape = CropImageView.CropShape.RECTANGLE;
+                        int fixedCropSizeInDp = 350;
+                        int fixedCropSizeInPixels = (int) (fixedCropSizeInDp * getResources().getDisplayMetrics().density);
+                        cropImageOptions.fixAspectRatio = true;
+                        cropImageOptions.aspectRatioX = cropImageOptions.aspectRatioY = fixedCropSizeInPixels;
 
                         CropImageContractOptions cropImageContractOptions = new CropImageContractOptions(image, cropImageOptions);
                         cropImage.launch(cropImageContractOptions);
