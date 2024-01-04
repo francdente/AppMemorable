@@ -6,6 +6,7 @@ import java.util.List;
 
 public class User {
     private String email, name, uid;
+    private List<String> friendEmails;
 
     public User(String email, String name, String uid) {
         this.email = email;
@@ -44,5 +45,13 @@ public class User {
 
     public void setUid(String uid) {
         this.uid = uid;
+    }
+
+    public List<String> getFriendEmails() {
+        return friendEmails;
+    }
+
+    public void setFriendEmails(List<String> friendEmails) {
+        this.friendEmails = friendEmails;
     }
 }

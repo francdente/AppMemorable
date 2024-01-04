@@ -1,6 +1,7 @@
 package fr.eurecom.appmemorable.ui.friends;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,6 +35,8 @@ public class FriendsFragment extends Fragment {
 private FragmentFriendsBinding binding;
 private FriendRequestListViewAdapter friendRequestListViewAdapter;
 private FriendListViewAdapter friendListViewAdapter;
+private List<String> totalUsers;
+private List<String> friends;
 
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -117,6 +120,36 @@ private FriendListViewAdapter friendListViewAdapter;
         // Set threshold to start showing suggestions after a certain number of characters
         autoCompleteTextView.setThreshold(1);
 
+        FirebaseDatabase.getInstance().getReference("friends/"+ FirebaseAuth.getInstance().getCurrentUser().getUid()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                List<User> newUsers = new ArrayList<>();
+                // Check if snapshot exists and has children
+                if (snapshot.exists() && snapshot.hasChildren()) {
+                    for (DataSnapshot userSnapshot : snapshot.getChildren()) {
+                        User user = userSnapshot.getValue(User.class);
+                        if (user != null) {
+                            newUsers.add(user);
+                        }
+                    }
+                }
+                friends = newUsers.stream().map(User::getEmail).collect(Collectors.toList());
+                for (int i = 0; i < dropDownAdapter.getCount(); i++){
+                    User user = dropDownAdapter.getItem(i);
+                    if (user != null && newUsers.stream().anyMatch(user1 -> user1.getEmail().equals(user.getEmail()))){
+                        Log.e("TAG", "onDataChange: " + user.getEmail());
+                        dropDownAdapter.remove(user);
+                    }
+                }
+                dropDownAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
         FirebaseDatabase.getInstance().getReference("users").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -129,6 +162,9 @@ private FriendListViewAdapter friendListViewAdapter;
                             newUsers.add(user);
                         }
                     }
+                }
+                if (friends != null){
+                    newUsers = newUsers.stream().filter(user -> !friends.contains(user.getEmail())).collect(Collectors.toList());
                 }
                 dropDownAdapter.clear();
                 //TODO: fix this

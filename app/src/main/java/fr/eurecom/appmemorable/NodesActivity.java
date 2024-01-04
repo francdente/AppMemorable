@@ -332,7 +332,7 @@ public class NodesActivity extends AppCompatActivity {
                                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                                     binding.progressBar.setVisibility(View.GONE);
 
-                                    NodesActivity.this.addNodeToAlbum(new ImageNode(albumKey, "1", null, text, randomUrl), albumKey);
+                                    NodesActivity.this.addNodeToAlbum(new ImageNode(albumKey, LocalDateTime.now().toString(), null, text, randomUrl), albumKey);
 
 
                                     Toast.makeText(NodesActivity.this, "Image uploaded successfully", Toast.LENGTH_SHORT).show();
