@@ -154,7 +154,7 @@ public class NodeListViewAdapter extends ArrayAdapter<ContentNode> {
                     public void run() {
                         if (mediaPlayer != null && mediaPlayer.isPlaying()) {
                             // Get the current position and duration
-                            currentPosition[0] += 500;
+                            currentPosition[0] += 250;
                             int totalDuration = mediaPlayer.getDuration();
 
                             // Calculate the progress percentage

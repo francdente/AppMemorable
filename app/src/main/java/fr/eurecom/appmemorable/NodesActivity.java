@@ -21,6 +21,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Chronometer;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -68,6 +69,7 @@ public class NodesActivity extends AppCompatActivity {
     File audioFile = null;
 
     Uri image;
+    ImageView imageView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,45 +88,8 @@ public class NodesActivity extends AppCompatActivity {
                 if(result.getResultCode() == RESULT_OK){
                     if(result.getData() != null){
                         image = result.getData().getData();
-
-                        StorageReference storageRef = FirebaseStorage.getInstance().getReference();
-                        String randomUrl = UUID.randomUUID().toString();
-                        StorageReference imageRef = storageRef.child(""+albumKey+"/"+randomUrl);
-
-                        binding.progressBar.setVisibility(View.VISIBLE);
-                        imageRef.putFile(image).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                            @Override
-                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                binding.progressBar.setVisibility(View.GONE);
-                                Dialog dialog = new Dialog(NodesActivity.this);
-                                dialog.setContentView(R.layout.add_node);
-                                dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                                dialog.setCancelable(false);
-                                dialog.getWindow().getAttributes().windowAnimations = R.style.dialog_animation;
-                                dialog.findViewById(R.id.btnInsert).setOnClickListener(v1 -> {
-                                    String text = ((TextView) dialog.findViewById(R.id.editText)).getText().toString();
-                                    NodesActivity.this.addNodeToAlbum(new ImageNode(albumKey, "1", null, text, randomUrl), albumKey);
-                                    dialog.dismiss();
-
-
-                                });
-                                dialog.findViewById(R.id.btnCancel).setOnClickListener(v1 -> {
-                                    NodesActivity.this.addNodeToAlbum(new ImageNode(albumKey, "1", null, null, randomUrl), albumKey);
-                                    dialog.dismiss();
-
-                                });
-                                dialog.show();
-
-                                Toast.makeText(NodesActivity.this, "Image uploaded successfully", Toast.LENGTH_SHORT).show();
-                            }
-                        }).addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                binding.progressBar.setVisibility(View.GONE);
-                                Toast.makeText(NodesActivity.this, "Something went wrong", Toast.LENGTH_SHORT).show();
-                            }
-                        });
-
+                        imageView.setImageURI(image);
+                        imageView.setVisibility(View.VISIBLE);
                         //Toast.makeText(NodesActivity.this, "Image Added", Toast.LENGTH_SHORT).show();
                     }
                 }
@@ -302,9 +267,71 @@ public class NodesActivity extends AppCompatActivity {
 
                     mIsAllFabsVisible = false;
 
-                    Intent intent = new Intent(Intent.ACTION_PICK);
-                    intent.setType("image/*");
-                    activityResultLauncher.launch(intent);
+                    Dialog dialog = new Dialog(this);
+                    dialog.setContentView(R.layout.add_image_node);
+                    dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                    dialog.setCancelable(false);
+                    dialog.getWindow().getAttributes().windowAnimations = R.style.dialog_animation;
+
+                    Button btnInsert = dialog.findViewById(R.id.btnInsert);
+                    Button btnCancel = dialog.findViewById(R.id.btnCancel);
+                    Button btnAddImage = dialog.findViewById(R.id.btnAddImage);
+                    imageView = dialog.findViewById(R.id.imageView);
+
+                    btnInsert.setOnClickListener(v1 -> {
+
+                        if(image!=null) {
+
+                            dialog.dismiss();
+                            binding.progressBar.setVisibility(View.VISIBLE);
+
+                            StorageReference storageRef = FirebaseStorage.getInstance().getReference();
+                            String randomUrl = UUID.randomUUID().toString();
+                            StorageReference imageRef = storageRef.child("" + albumKey + "/" + randomUrl);
+                            String text = ((TextView) dialog.findViewById(R.id.editDescription)).getText().toString();
+
+
+                            imageRef.putFile(image).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                                @Override
+                                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                    binding.progressBar.setVisibility(View.GONE);
+
+                                    NodesActivity.this.addNodeToAlbum(new ImageNode(albumKey, "1", null, text, randomUrl), albumKey);
+
+
+                                    Toast.makeText(NodesActivity.this, "Image uploaded successfully", Toast.LENGTH_SHORT).show();
+                                }
+                            }).addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    binding.progressBar.setVisibility(View.GONE);
+                                    //dialog.dismiss();
+                                    Toast.makeText(NodesActivity.this, "Something went wrong", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+
+                        }
+                        else {
+                            Toast.makeText(NodesActivity.this, "Please select an image!", Toast.LENGTH_SHORT).show();
+                        }
+
+                    });
+
+                    btnCancel.setOnClickListener(v1 -> {
+                        dialog.dismiss();
+                    });
+
+                    btnAddImage.setOnClickListener(v1 -> {
+
+
+                        Intent intent = new Intent(Intent.ACTION_PICK);
+                        intent.setType("image/*");
+                        activityResultLauncher.launch(intent);
+
+                    });
+
+
+                    dialog.show();
 
 
                 });
