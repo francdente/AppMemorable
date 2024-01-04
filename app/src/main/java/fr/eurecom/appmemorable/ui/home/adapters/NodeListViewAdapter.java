@@ -77,6 +77,7 @@ public class NodeListViewAdapter extends ArrayAdapter<ContentNode> {
     private void initializeImageNode(ImageNode imageNode, ImageNodeBinding imageNodeBinding) {
         imageNodeBinding.author.setText(imageNode.getUser().getName());
         imageNodeBinding.textView.setText(imageNode.getText());
+        imageNodeBinding.messageDate.setText(imageNode.getMessageDate());
         if (imageNode.getUser().getUid().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
             imageNodeBinding.imageView.setOnLongClickListener(v1 -> {
                 PopupMenu popupMenu = new PopupMenu(getContext(), v1);
