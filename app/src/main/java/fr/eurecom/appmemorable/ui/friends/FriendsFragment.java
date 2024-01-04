@@ -35,7 +35,6 @@ public class FriendsFragment extends Fragment {
 private FragmentFriendsBinding binding;
 private FriendRequestListViewAdapter friendRequestListViewAdapter;
 private FriendListViewAdapter friendListViewAdapter;
-private List<String> totalUsers;
 private List<String> friends;
 
 
@@ -55,7 +54,6 @@ private List<String> friends;
         initFriendSearch();
         initFriendRequestListView();
         initFriendListView();
-
     }
 
     private void initFriendListView(){

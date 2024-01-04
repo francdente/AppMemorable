@@ -9,8 +9,8 @@
     <!-- Friend's Profile Picture -->
     <ImageView
         android:id="@+id/imageViewProfilePicture"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         android:src="@drawable/user_alt_1_svgrepo_com"
         android:scaleType="centerCrop"
         android:layout_gravity="center"/>
@@ -20,7 +20,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:layout_marginStart="8dp">
+        android:layout_marginStart="0dp">
 
         <!-- Friend's Name -->
         <TextView
@@ -37,6 +37,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Remove"
-            android:layout_marginTop="4dp"/>
+            android:layout_marginTop="2dp"
+            android:padding="4dp"/>
+
     </LinearLayout>
 </LinearLayout>
