@@ -4,6 +4,12 @@
     android:layout_height="wrap_content"
     android:padding="16dp">
 
+    <com.canhub.cropper.CropImageView
+        android:id="@+id/cropImageView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        />
 
     <Button
         android:id="@+id/btnInsert"
