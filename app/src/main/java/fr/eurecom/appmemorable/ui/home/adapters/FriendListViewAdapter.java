@@ -1,10 +1,13 @@
 package fr.eurecom.appmemorable.ui.home.adapters;
 
+import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -20,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import fr.eurecom.appmemorable.NodesActivity;
+import fr.eurecom.appmemorable.R;
 import fr.eurecom.appmemorable.databinding.FriendItemBinding;
 import fr.eurecom.appmemorable.databinding.FriendRequestItemBinding;
 import fr.eurecom.appmemorable.models.Album;
@@ -45,10 +50,60 @@ public class FriendListViewAdapter extends ArrayAdapter<User> {
         friendItemBinding.buttonRemoveFriend.setOnClickListener(v -> {
             showDeleteConfirmationDialog(user);
         });
+        initSharedAlbumButton(user);
         convertView = friendItemBinding.getRoot();
         return convertView;
     }
 
+    private void initSharedAlbumButton(User user) {
+        friendItemBinding.imageViewProfilePicture.setOnClickListener(v -> {
+            Dialog dialog = new Dialog(getContext());
+            dialog.setContentView(R.layout.shared_albums_dialog);
+            dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            dialog.setCancelable(true);
+            dialog.getWindow().getAttributes().windowAnimations = R.style.dialog_animation;
+            ListView sharedAlbumsListView = dialog.findViewById(R.id.listViewSharedAlbums);
+            List<Album> sharedAlbums = new ArrayList<>();
+            ArrayAdapter<Album> sharedAlbumsAdapter = new ArrayAdapter<Album>(getContext(), android.R.layout.simple_list_item_1, sharedAlbums);
+            FirebaseDatabase.getInstance().getReference("userAlbums/" + FirebaseAuth.getInstance().getCurrentUser().getUid())
+                            .addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                    List<Album> albums = new ArrayList<>();
+                                    for (DataSnapshot albumSnapshot : snapshot.getChildren()) {
+                                        ConcreteAlbum concreteAlbum = albumSnapshot.getValue(ConcreteAlbum.class);
+                                        albums.add(concreteAlbum.IntoAlbum());
+                                    }
+                                    List<Album> sharedAlbums = albums.stream().filter(a -> a.getUsers().stream().anyMatch(u -> u.getUid().equals(user.getUid()))).collect(Collectors.toList());
+                                    sharedAlbumsAdapter.clear();
+                                    sharedAlbumsAdapter.addAll(sharedAlbums);
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError error) {
+
+                                }
+                            });
+            sharedAlbumsListView.setAdapter(sharedAlbumsAdapter);
+            sharedAlbumsListView.setOnItemClickListener((parent, view, position, id) -> {
+                //Retrieve album in this position in the adapter
+                Album album = (Album) parent.getItemAtPosition(position);
+                //Start the NodesActivity with the album
+                String valueToPass = album.getId();
+
+                // Create an Intent
+                Intent intent = new Intent(getContext(), NodesActivity.class);
+
+                // Put the value as an extra in the Intent
+                intent.putExtra("albumKey", valueToPass);
+                intent.putExtra("albumName", album.getTitle());
+
+                // Start the SecondActivity
+                getContext().startActivity(intent);
+            });
+            dialog.show();
+        });
+    }
     private void showDeleteConfirmationDialog(User user) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle("Remove Friend")
