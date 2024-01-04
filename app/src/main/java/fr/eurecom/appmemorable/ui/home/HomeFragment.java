@@ -254,8 +254,8 @@ public class HomeFragment extends Fragment {
                 selectedUsers.add(owner);
                 String albumCoverUrl = UUID.randomUUID().toString();
                 Album newAlbum = new Album(albumName, new HashMap<>(), selectedUsers, LocalDateTime.now(), owner, albumCoverUrl);
-                this.addAlbum(newAlbum, selectedUsers);
-                this.addAlbumCover(newAlbum);
+                this.addAlbumCover(newAlbum,selectedUsers);
+                //this.addAlbum(newAlbum, selectedUsers);
                 dialog.dismiss();
             });
             dialog.findViewById(R.id.btnCancel).setOnClickListener(v1 -> {
@@ -292,14 +292,14 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    private void addAlbumCover(Album album){
+    private void addAlbumCover(Album album, List<User> users){
         Log.e("addAlbum", album.getOwner().getEmail());
-        StorageReference albumCoverRef = FirebaseStorage.getInstance().getReference().child(""+album.getId()+"/"+album.getAlbumCoverUrl());;
+        StorageReference albumCoverRef = FirebaseStorage.getInstance().getReference().child("cover/"+album.getAlbumCoverUrl());;
 
         albumCoverRef.putFile(albumCover).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-
+                addAlbum(album, users);
                 Toast.makeText(getContext(), "Cover uploaded successfully", Toast.LENGTH_SHORT).show();
             }
         }).addOnFailureListener(new OnFailureListener() {

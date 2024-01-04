@@ -64,7 +64,7 @@ public class AlbumListViewAdapter extends ArrayAdapter<Album> {
         albumItemBinding.textViewAlbumTitle.setText(album.getTitle());
         albumItemBinding.albumDate.setText(album.getTimeOfCreation());
 
-        StorageReference storageRef = FirebaseStorage.getInstance().getReference().child("" + album.getId() + "/" + album.getAlbumCoverUrl());
+        StorageReference storageRef = FirebaseStorage.getInstance().getReference().child("cover/" + album.getAlbumCoverUrl());
         if(storageRef != null) {
 
             Glide
