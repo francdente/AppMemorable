@@ -29,6 +29,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.canhub.cropper.CropImageContract;
+import com.canhub.cropper.CropImageContractOptions;
+import com.canhub.cropper.CropImageOptions;
+import com.canhub.cropper.CropImageView;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -70,6 +74,8 @@ public class HomeFragment extends Fragment {
     Uri albumCover;
     ImageView albumCoverImageView;
 
+    Uri albumCoverCropped;
+
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentHomeBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
@@ -84,14 +90,36 @@ public class HomeFragment extends Fragment {
         initFilterAlbum();
         initAddAlbumButton();
 
+        ActivityResultLauncher<CropImageContractOptions> cropAlbumCover = registerForActivityResult(new CropImageContract(), result -> {
+            if (result.isSuccessful()) {
+                albumCoverCropped = result.getUriContent();
+                albumCoverImageView.setImageURI(albumCoverCropped);
+                albumCoverImageView.setVisibility(View.VISIBLE);
+            }
+        });
+
         activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
             @Override
             public void onActivityResult(ActivityResult result) {
                 if(result.getResultCode() == RESULT_OK){
                     if(result.getData() != null){
                         albumCover = result.getData().getData();
-                        albumCoverImageView.setImageURI(albumCover);
-                        albumCoverImageView.setVisibility(View.VISIBLE);
+
+                        CropImageOptions cropImageOptions = new CropImageOptions();
+                        cropImageOptions.imageSourceIncludeGallery = false;
+                        cropImageOptions.imageSourceIncludeCamera = true;
+                        cropImageOptions.cropShape = CropImageView.CropShape.RECTANGLE;
+                        int fixedCropSizeInDp = 180;
+                        int fixedCropSizeInPixels = (int) (fixedCropSizeInDp * getResources().getDisplayMetrics().density);
+                        cropImageOptions.fixAspectRatio = true;
+                        cropImageOptions.aspectRatioY = fixedCropSizeInPixels;
+                        fixedCropSizeInDp = 140;
+                        fixedCropSizeInPixels = (int) (fixedCropSizeInDp * getResources().getDisplayMetrics().density);
+                        cropImageOptions.aspectRatioX = fixedCropSizeInPixels;
+
+                        CropImageContractOptions cropImageContractOptions = new CropImageContractOptions(albumCover, cropImageOptions);
+                        cropAlbumCover.launch(cropImageContractOptions);
+
                     }
                 }
 
@@ -296,7 +324,7 @@ public class HomeFragment extends Fragment {
         Log.e("addAlbum", album.getOwner().getEmail());
         StorageReference albumCoverRef = FirebaseStorage.getInstance().getReference().child("cover/"+album.getAlbumCoverUrl());;
 
-        albumCoverRef.putFile(albumCover).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+        albumCoverRef.putFile(albumCoverCropped).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 addAlbum(album, users);
