@@ -165,7 +165,6 @@ private List<String> friends;
                     newUsers = newUsers.stream().filter(user -> !friends.contains(user.getEmail())).collect(Collectors.toList());
                 }
                 dropDownAdapter.clear();
-                //TODO: fix this
                 dropDownAdapter.addAll(newUsers.stream().filter(user -> !user.getEmail().equals(FirebaseAuth.getInstance().getCurrentUser().getEmail())).collect(Collectors.toList()));
             }
 

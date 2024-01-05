@@ -1,8 +1,10 @@
 package fr.eurecom.appmemorable;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.CompoundButton;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -26,8 +28,8 @@ public class SignInActivity extends AppCompatActivity {
     MutableLiveData<Boolean> isSignedIn = new MutableLiveData<>();
     TextInputLayout email, password, username, confirmPassword;
     ActivitySignInBinding binding;
-    private void signIn(String email, String password) {
-        if (!validateEmail()) {
+    private void signIn(String email, String password, Boolean autoLogin) {
+        if (!autoLogin && !validateEmail()) {
             return;
         }
         binding.progressBar.setVisibility(View.VISIBLE);
@@ -36,8 +38,10 @@ public class SignInActivity extends AppCompatActivity {
                     if (task.isSuccessful()) {
                         // Sign in success, update UI with the signed-in user's information
                         isSignedIn.setValue(true);
-                        this.password.setError(null);
-                        this.email.setError(null);
+                        if (!autoLogin) {
+                            this.password.setError(null);
+                            this.email.setError(null);
+                        }
                     } else {
                         // If sign in fails, display a message to the user.
                         binding.progressBar.setVisibility(View.GONE);
@@ -198,13 +202,45 @@ public class SignInActivity extends AppCompatActivity {
         binding = ActivitySignInBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        isSignedIn.setValue(false);
+        initSignedIn();
+        initAutoLogin();
+        initSignBtn();
+        initToggleLoginModeBtn();
+    }
 
+
+    private void initSignedIn() {
+        isSignedIn.setValue(false);
+        isSignedIn.observe(this, isSignedIn -> {
+            if (isSignedIn) {
+                binding.progressBar.setVisibility(View.GONE);
+                SharedPreferences sharedPreferences = getSharedPreferences("authPreferences", MODE_PRIVATE);
+                if (binding.rememberMeCheckbox.isChecked()){
+                    sharedPreferences.edit().putBoolean("rememberMe", true).apply();
+                    sharedPreferences.edit().putString("email", email.getEditText().getText().toString()).apply();
+                    sharedPreferences.edit().putString("password", password.getEditText().getText().toString()).apply();
+                }
+                Intent intent = new Intent(this, MainActivity.class);
+                startActivity(intent);
+                finish();
+            } else {
+            }
+        });
+    }
+    private void initAutoLogin(){
+        SharedPreferences sharedPreferences = getSharedPreferences("authPreferences", MODE_PRIVATE);
+        if (sharedPreferences.getBoolean("rememberMe", false)){
+            String email = sharedPreferences.getString("email", "");
+            String password = sharedPreferences.getString("password", "");
+            this.signIn(email, password, true);
+        }
+    }
+    private void initSignBtn() {
         binding.signButton.setOnClickListener(v -> {
             if(binding.signButton.getText().toString().equals("Sign In")) {
                 email = findViewById(R.id.email);
                 password = findViewById(R.id.password);
-                this.signIn(email.getEditText().getText().toString(), password.getEditText().getText().toString());
+                this.signIn(email.getEditText().getText().toString(), password.getEditText().getText().toString(), false);
             } else {
                 email = findViewById(R.id.email);
                 password = findViewById(R.id.password);
@@ -213,7 +249,9 @@ public class SignInActivity extends AppCompatActivity {
                 this.signUp(email.getEditText().getText().toString(), password.getEditText().getText().toString(), username.getEditText().getText().toString(), confirmPassword.getEditText().getText().toString());
             }
         });
+    }
 
+    private void initToggleLoginModeBtn() {
         binding.toggleLoginMode.setOnClickListener(v -> {
             if (binding.toggleLoginMode.getText().toString().equals("Sign Up")) {
                 binding.toggleLoginModeText.setText("Already have an account?");
@@ -245,16 +283,6 @@ public class SignInActivity extends AppCompatActivity {
                 binding.email.setError(null);
                 binding.password.setError(null);
                 binding.confirmPassword.setError(null);
-            }
-        });
-
-        isSignedIn.observe(this, isSignedIn -> {
-            if (isSignedIn) {
-                binding.progressBar.setVisibility(View.GONE);
-                Intent intent = new Intent(this, MainActivity.class);
-                startActivity(intent);
-                finish();
-            } else {
             }
         });
     }
