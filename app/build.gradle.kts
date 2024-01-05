@@ -64,6 +64,12 @@ dependencies {
     // Also add the dependency for the Google Play services library and specify its version
     implementation("com.google.android.gms:play-services-auth:20.7.0")
 
-    //Add dep for reaction button
-    implementation ("io.github.amrdeveloper:reactbutton:2.1.0")
+    // Add dependency for Credential manager
+    implementation("androidx.credentials:credentials:1.3.0-alpha01")
+    // optional - needed for credentials support from play services, for devices running
+    // Android 13 and below.
+    implementation("androidx.credentials:credentials-play-services-auth:1.3.0-alpha01")
+
+    implementation ("com.google.android.libraries.identity.googleid:googleid:<latest version>")
+
 }

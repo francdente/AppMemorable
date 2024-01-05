@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.MutableLiveData;
 
 
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
@@ -203,9 +204,17 @@ public class SignInActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         initSignedIn();
+        initForgotPassword();
         initAutoLogin();
         initSignBtn();
         initToggleLoginModeBtn();
+    }
+
+    private void initForgotPassword() {
+        binding.forgotPassword.setOnClickListener(v -> {
+            Intent intent = new Intent(this, ForgotPasswordActivity.class);
+            startActivity(intent);
+        });
     }
 
 
