@@ -166,7 +166,7 @@ public class NodeListViewAdapter extends ArrayAdapter<ContentNode> {
                             audioNodeBinding.progressBar.setProgress(progress);
 
                             // Schedule the next update after a delay (e.g., 500 milliseconds)
-                            handler.postDelayed(this, 500);
+                            handler.postDelayed(this, 250);
                         }
                     }
                 };

@@ -17,7 +17,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/add_image"
+        android:id="@+id/add_photo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="24dp"
@@ -26,6 +26,16 @@
         app:layout_constraintBottom_toTopOf="@+id/add_fab"
         app:layout_constraintEnd_toEndOf="@+id/add_fab"
         app:layout_constraintStart_toStartOf="@+id/add_fab" />
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/add_image"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:src="@drawable/image_svgrepo_com"
+        app:fabSize="normal"
+        app:layout_constraintBottom_toTopOf="@+id/add_photo"
+        app:layout_constraintEnd_toEndOf="@+id/add_photo"
+        app:layout_constraintStart_toStartOf="@+id/add_photo" />
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/add_audio"
         android:layout_width="wrap_content"

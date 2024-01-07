@@ -10,12 +10,15 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Dialog;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -46,7 +49,9 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -79,6 +84,7 @@ public class NodesActivity extends AppCompatActivity {
     Uri image;
     Uri croppedImage;
     ImageView imageView;
+    Bitmap bitmap;
 
     AddImageNodeBinding bindingImage;
 
@@ -100,6 +106,7 @@ public class NodesActivity extends AppCompatActivity {
                 imageView.setImageURI(croppedImage);
                 imageView.setVisibility(View.VISIBLE);
             }
+
         });
 
 
@@ -109,6 +116,7 @@ public class NodesActivity extends AppCompatActivity {
                 if(result.getResultCode() == RESULT_OK){
                     if(result.getData() != null){
                         image = result.getData().getData();
+                        bitmap = (Bitmap) result.getData().getExtras().get("data");
 
                         bindingImage.cropImageView.setImageUriAsync(image);
 
@@ -132,6 +140,7 @@ public class NodesActivity extends AppCompatActivity {
 
             }
         });
+
         FirebaseDatabase.getInstance().getReference("albums/"+albumKey).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -167,6 +176,7 @@ public class NodesActivity extends AppCompatActivity {
         binding.addAudio.setVisibility(View.GONE);
         binding.addImage.setVisibility(View.GONE);
         binding.addText.setVisibility(View.GONE);
+        binding.addPhoto.setVisibility(View.GONE);
 
         mIsAllFabsVisible = false;
 
@@ -175,12 +185,14 @@ public class NodesActivity extends AppCompatActivity {
                 binding.addAudio.show();
                 binding.addImage.show();
                 binding.addText.show();
+                binding.addPhoto.show();
 
                 mIsAllFabsVisible = true;
             } else {
                 binding.addAudio.setVisibility(View.GONE);
                 binding.addImage.setVisibility(View.GONE);
                 binding.addText.setVisibility(View.GONE);
+                binding.addPhoto.setVisibility(View.GONE);
 
                 mIsAllFabsVisible = false;
             }
@@ -191,6 +203,7 @@ public class NodesActivity extends AppCompatActivity {
                     binding.addAudio.setVisibility(View.GONE);
                     binding.addImage.setVisibility(View.GONE);
                     binding.addText.setVisibility(View.GONE);
+                    binding.addPhoto.setVisibility(View.GONE);
 
                     Dialog dialog = new Dialog(this);
                     dialog.setContentView(R.layout.add_audio_node);
@@ -300,6 +313,7 @@ public class NodesActivity extends AppCompatActivity {
                     binding.addAudio.setVisibility(View.GONE);
                     binding.addImage.setVisibility(View.GONE);
                     binding.addText.setVisibility(View.GONE);
+                    binding.addPhoto.setVisibility(View.GONE);
 
                     mIsAllFabsVisible = false;
 
@@ -316,7 +330,7 @@ public class NodesActivity extends AppCompatActivity {
 
                     btnInsert.setOnClickListener(v1 -> {
 
-                        if(image!=null) {
+                        if(croppedImage!=null) {
 
                             dialog.dismiss();
                             binding.progressBar.setVisibility(View.VISIBLE);
@@ -333,7 +347,8 @@ public class NodesActivity extends AppCompatActivity {
                                     binding.progressBar.setVisibility(View.GONE);
 
                                     NodesActivity.this.addNodeToAlbum(new ImageNode(albumKey, LocalDateTime.now().toString(), null, text, randomUrl), albumKey);
-
+                                    croppedImage = null;
+                                    image = null;
 
                                     Toast.makeText(NodesActivity.this, "Image uploaded successfully", Toast.LENGTH_SHORT).show();
                                 }
@@ -359,10 +374,10 @@ public class NodesActivity extends AppCompatActivity {
 
                     btnAddImage.setOnClickListener(v1 -> {
 
-
                         Intent intent = new Intent(Intent.ACTION_PICK);
                         intent.setType("image/*");
                         activityResultLauncher.launch(intent);
+
 
                     });
 
@@ -376,6 +391,7 @@ public class NodesActivity extends AppCompatActivity {
                     binding.addAudio.setVisibility(View.GONE);
                     binding.addImage.setVisibility(View.GONE);
                     binding.addText.setVisibility(View.GONE);
+                    binding.addPhoto.setVisibility(View.GONE);
 
                     mIsAllFabsVisible = false;
                     Dialog dialog = new Dialog(this);
@@ -393,6 +409,98 @@ public class NodesActivity extends AppCompatActivity {
                     dialog.findViewById(R.id.btnCancel).setOnClickListener(v1 -> dialog.dismiss());
                     dialog.show();
                 });
+
+        binding.addPhoto.setOnClickListener(
+                v -> {
+                    binding.addAudio.setVisibility(View.GONE);
+                    binding.addImage.setVisibility(View.GONE);
+                    binding.addText.setVisibility(View.GONE);
+                    binding.addPhoto.setVisibility(View.GONE);
+
+                    mIsAllFabsVisible = false;
+
+                    Dialog dialog = new Dialog(this);
+                    dialog.setContentView(R.layout.add_image_node);
+                    dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                    dialog.setCancelable(false);
+                    dialog.getWindow().getAttributes().windowAnimations = R.style.dialog_animation;
+
+                    Button btnInsert = dialog.findViewById(R.id.btnInsert);
+                    Button btnCancel = dialog.findViewById(R.id.btnCancel);
+                    Button btnAddImage = dialog.findViewById(R.id.btnAddImage);
+                    imageView = dialog.findViewById(R.id.imageView);
+
+                    btnInsert.setOnClickListener(v1 -> {
+
+                        if(croppedImage!=null) {
+
+                            dialog.dismiss();
+                            binding.progressBar.setVisibility(View.VISIBLE);
+
+                            StorageReference storageRef = FirebaseStorage.getInstance().getReference();
+                            String randomUrl = UUID.randomUUID().toString();
+                            StorageReference imageRef = storageRef.child("" + albumKey + "/" + randomUrl);
+                            String text = ((TextView) dialog.findViewById(R.id.editDescription)).getText().toString();
+
+
+                            imageRef.putFile(croppedImage).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                                @Override
+                                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                    binding.progressBar.setVisibility(View.GONE);
+
+                                    NodesActivity.this.addNodeToAlbum(new ImageNode(albumKey, LocalDateTime.now().toString(), null, text, randomUrl), albumKey);
+                                    ContentValues values = new ContentValues();
+                                    ContentResolver cr = getContentResolver();
+                                    values.put(MediaStore.MediaColumns.DISPLAY_NAME, "image");
+                                    values.put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg"); // You may need to adjust the MIME type based on your image type
+                                    values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES+"/"+"Memorable" );
+                                    Uri uri = cr.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+                                    try {
+                                        OutputStream out = cr.openOutputStream(uri);
+                                        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+                                    } catch (FileNotFoundException e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                    croppedImage = null;
+                                    image = null;
+
+                                    Toast.makeText(NodesActivity.this, "Image uploaded successfully", Toast.LENGTH_SHORT).show();
+                                }
+                            }).addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    binding.progressBar.setVisibility(View.GONE);
+                                    //dialog.dismiss();
+                                    Toast.makeText(NodesActivity.this, "Something went wrong", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+
+                        }
+                        else {
+                            Toast.makeText(NodesActivity.this, "Please take a photo!", Toast.LENGTH_SHORT).show();
+                        }
+
+                    });
+
+                    btnCancel.setOnClickListener(v1 -> {
+                        dialog.dismiss();
+                    });
+
+                    btnAddImage.setOnClickListener(v1 -> {
+
+
+                        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                        activityResultLauncher.launch(takePictureIntent);
+
+                    });
+
+
+                    dialog.show();
+
+
+                });
+
+
     }
 
     private void addNodeToAlbum(ContentNode node, String albumKey) {
