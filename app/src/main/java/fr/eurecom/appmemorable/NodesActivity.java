@@ -76,6 +76,7 @@ public class NodesActivity extends AppCompatActivity {
     NodeListViewAdapter nodeListViewAdapter;
     private boolean mIsAllFabsVisible = false;
     ActivityResultLauncher<Intent> activityResultLauncher;
+    ActivityResultLauncher<Intent> activityResultLauncherPhoto;
 
     MediaRecorder mediaRecorder;
     String audioFilePath;
@@ -111,6 +112,36 @@ public class NodesActivity extends AppCompatActivity {
 
 
         activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
+            @Override
+            public void onActivityResult(ActivityResult result) {
+                if(result.getResultCode() == RESULT_OK){
+                    if(result.getData() != null){
+                        image = result.getData().getData();
+
+                        bindingImage.cropImageView.setImageUriAsync(image);
+
+                        CropImageOptions cropImageOptions = new CropImageOptions();
+                        cropImageOptions.imageSourceIncludeGallery = false;
+                        cropImageOptions.imageSourceIncludeCamera = true;
+                        cropImageOptions.cropShape = CropImageView.CropShape.RECTANGLE;
+                        int fixedCropSizeInDp = 350;
+                        int fixedCropSizeInPixels = (int) (fixedCropSizeInDp * getResources().getDisplayMetrics().density);
+                        cropImageOptions.fixAspectRatio = true;
+                        cropImageOptions.aspectRatioX = cropImageOptions.aspectRatioY = fixedCropSizeInPixels;
+
+                        CropImageContractOptions cropImageContractOptions = new CropImageContractOptions(image, cropImageOptions);
+                        cropImage.launch(cropImageContractOptions);
+
+
+
+                        //Toast.makeText(NodesActivity.this, "Image Added", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+            }
+        });
+
+        activityResultLauncherPhoto = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
             @Override
             public void onActivityResult(ActivityResult result) {
                 if(result.getResultCode() == RESULT_OK){
@@ -490,7 +521,7 @@ public class NodesActivity extends AppCompatActivity {
 
 
                         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                        activityResultLauncher.launch(takePictureIntent);
+                        activityResultLauncherPhoto.launch(takePictureIntent);
 
                     });
 
