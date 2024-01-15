@@ -85,7 +85,6 @@ public class NodesActivity extends AppCompatActivity {
     Uri image;
     Uri croppedImage;
     ImageView imageView;
-    Bitmap bitmap;
 
     AddImageNodeBinding bindingImage;
 
@@ -147,7 +146,6 @@ public class NodesActivity extends AppCompatActivity {
                 if(result.getResultCode() == RESULT_OK){
                     if(result.getData() != null){
                         image = result.getData().getData();
-                        bitmap = (Bitmap) result.getData().getExtras().get("data");
 
                         bindingImage.cropImageView.setImageUriAsync(image);
 
@@ -480,7 +478,7 @@ public class NodesActivity extends AppCompatActivity {
                                     binding.progressBar.setVisibility(View.GONE);
 
                                     NodesActivity.this.addNodeToAlbum(new ImageNode(albumKey, LocalDateTime.now().toString(), null, text, randomUrl), albumKey);
-                                    ContentValues values = new ContentValues();
+                                    /*ContentValues values = new ContentValues();
                                     ContentResolver cr = getContentResolver();
                                     values.put(MediaStore.MediaColumns.DISPLAY_NAME, "image");
                                     values.put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg"); // You may need to adjust the MIME type based on your image type
@@ -491,7 +489,7 @@ public class NodesActivity extends AppCompatActivity {
                                         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
                                     } catch (FileNotFoundException e) {
                                         throw new RuntimeException(e);
-                                    }
+                                    }*/
                                     croppedImage = null;
                                     image = null;
 
@@ -519,9 +517,7 @@ public class NodesActivity extends AppCompatActivity {
 
                     btnAddImage.setOnClickListener(v1 -> {
 
-
-                        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                        activityResultLauncherPhoto.launch(takePictureIntent);
+                        activityResultLauncherPhoto.launch(new Intent(MediaStore.ACTION_IMAGE_CAPTURE));
 
                     });
 
