@@ -568,6 +568,10 @@ public class NodesActivity extends AppCompatActivity {
 
     private void deleteRecording() {
 
+        mediaRecorder.stop();
+        mediaRecorder.release();
+        mediaRecorder = null;
+
         if (audioFile != null) {
             audioFile = null;
         }
