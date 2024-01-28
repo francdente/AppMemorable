@@ -92,7 +92,7 @@ public class NodesActivity extends AppCompatActivity {
 
     Uri image, croppedImage;
     ImageView imageView;
-    String albumKey, albumName, owner;
+    String albumKey, albumName, owner, creationDate;
 
     AddImageNodeBinding bindingImage;
 
@@ -327,6 +327,7 @@ public class NodesActivity extends AppCompatActivity {
                 Log.e("users", "editAlbum: " + users.size());
                 album.setId(curr_album.getId());
                 album.setAlbumCoverUrl(curr_album.getAlbumCoverUrl());
+                album.setCreationDate(curr_album.getCreationDate());
                 DatabaseReference first_ref = userAlbums.child(users.get(0).getUid()).child(album.getId());
                 first_ref.setValue(new ConcreteAlbum(album));
                 for (int i = 1; i < users.size(); i++) {
