@@ -1,4 +1,4 @@
-package fr.eurecom.appmemorable.ui.notifications;
+package fr.eurecom.appmemorable.ui.Settings;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -12,6 +12,8 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
+import com.google.firebase.auth.FirebaseAuth;
+
 import fr.eurecom.appmemorable.SignInActivity;
 import fr.eurecom.appmemorable.databinding.FragmentSettingsBinding;
 
@@ -22,6 +24,7 @@ private FragmentSettingsBinding binding;
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         binding = FragmentSettingsBinding.inflate(inflater, container, false);
+        binding.loggedInAsText.setText("Logged in as: " + FirebaseAuth.getInstance().getCurrentUser().getEmail());
         binding.logoutButton.setOnClickListener(v -> {
             SharedPreferences sharedPreferences = getActivity().getSharedPreferences("authPreferences", MODE_PRIVATE);
             sharedPreferences.edit().putBoolean("rememberMe", false).apply();

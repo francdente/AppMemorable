@@ -1,20 +1,29 @@
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:padding="16dp">
-
-    <!-- Your settings items go here -->
-
-    <Button
-        android:id="@+id/logout_button"
-        android:layout_width="match_parent"
+    <!-- Logged in as TextView -->
+    <TextView
+        android:id="@+id/loggedInAsText"
+        android:layout_width="wrap_content"
+        android:gravity="center_horizontal"
+        android:layout_gravity="center_horizontal"
         android:layout_height="wrap_content"
-        android:text="Logout"
-        android:layout_marginTop="16dp"
-        android:background="@drawable/rounded_button_background"
-        android:textColor="#FFFFFF"
-        android:textStyle="bold"
-        android:textSize="18sp"/>
+        android:text="Logged in as John Doe"
+        android:textColor="#000000"
+        android:textSize="24sp"
+        android:textStyle="" />
+
+        <Button
+            android:id="@+id/logout_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Logout"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/rounded_button_background"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:textSize="18sp"/>
 </LinearLayout>

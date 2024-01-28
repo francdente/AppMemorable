@@ -57,14 +57,6 @@
             android:layout_marginStart="10dp"
             android:visibility="gone"
             android:orientation="vertical">
-            <TextView
-                android:id="@+id/filtering_options_text"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textStyle="bold"
-                android:textSize="20sp"
-                android:text="Filtering options"
-                android:layout_gravity="center" />
             <SearchView
                 android:id="@+id/search_view"
                 android:layout_width="wrap_content"
@@ -111,6 +103,13 @@
                     android:layout_gravity="center"
                     android:layout_marginEnd="10dp"
                     android:text="Owned"/>
+                <CheckBox
+                    android:id="@+id/favorite_filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginEnd="10dp"
+                    android:text="Favorite"/>
             </LinearLayout>
 
 

@@ -16,6 +16,16 @@ public class Album {
     private LocalDateTime creationDate;
     private String albumCoverUrl;
 
+    public boolean isFavorite() {
+        return favorite;
+    }
+
+    public void setFavorite(boolean favorite) {
+        this.favorite = favorite;
+    }
+
+    private boolean favorite;
+
     public Album(){
         nodes = new HashMap<>();
     }

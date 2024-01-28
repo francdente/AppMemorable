@@ -15,6 +15,15 @@ public class ConcreteAlbum {
     private User owner;
 
     private String albumCoverUrl;
+    private boolean favorite;
+
+    public boolean isFavorite() {
+        return favorite;
+    }
+
+    public void setFavorite(boolean favorite) {
+        this.favorite = favorite;
+    }
 
     public ConcreteAlbum() {
     }
@@ -26,6 +35,7 @@ public class ConcreteAlbum {
         this.users = album.getUsers();
         this.owner = album.getOwner();
         this.albumCoverUrl = album.getAlbumCoverUrl();
+        this.favorite = album.isFavorite();
         for (Map.Entry<String, ContentNode> entry : album.getNodes().entrySet()) {
             String key = entry.getKey();
             ContentNode node = entry.getValue();
@@ -43,6 +53,7 @@ public class ConcreteAlbum {
         }
         Album album = new Album(this.title, nodes, this.users, LocalDateTime.parse(this.creationDate), this.owner, this.albumCoverUrl);
         album.setId(this.id);
+        album.setFavorite(this.favorite);
         return album;
     }
 

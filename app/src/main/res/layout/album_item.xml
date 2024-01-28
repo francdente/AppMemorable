@@ -8,12 +8,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="horizontal"
     android:padding="30dp">
+
     <androidx.cardview.widget.CardView
         android:layout_width="140dp"
         android:layout_height="180dp"
         app:cardBackgroundColor="@color/white"
-        app:cardCornerRadius="30dp"
-        >
+        app:cardCornerRadius="30dp">
         <ImageView
             android:id="@+id/imageViewAlbum"
             android:layout_width="match_parent"
@@ -23,39 +23,73 @@
             android:clickable="true"
             android:focusable="true" />
     </androidx.cardview.widget.CardView>
+
     <!-- Album Title -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:padding="10dp">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
         <TextView
             android:id="@+id/textViewAlbumTitle"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="18sp"
             android:text="placeholder"
             android:transitionName="album_title"
             android:clickable="true"
             android:textStyle="bold"
-            android:focusable="true"
-            />
+            android:focusable="true" />
+
+        <ImageView
+            android:id="@+id/owned_icon"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/user_alt_1_svgrepo_com"
+            android:visibility="invisible"
+            android:contentDescription="User Icon" />
+
+        </LinearLayout>
+
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/album_date"
             android:text="placeholder"
             android:textSize="14sp"
-            android:textStyle="italic"
-            />
-        <ImageButton
-            android:layout_width="wrap_content"
+            android:textStyle="italic" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/album_settings"
-            android:background="?android:attr/selectableItemBackground"
-            android:src="@drawable/dots_3_horizontal_svgrepo_com"
-            />
+            android:layout_marginTop="20dp"
+            android:orientation="horizontal"
+            android:gravity="end">
+
+            <ImageView
+                android:id="@+id/album_favorite"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:src="@drawable/star_svgrepo_com"
+                />
+
+            <ImageView
+                android:id="@+id/album_delete"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:src="@drawable/trash_svgrepo_com"
+                android:layout_marginLeft="20dp"
+                />
+
+        </LinearLayout>
+
+
     </LinearLayout>
+
 
 
 </LinearLayout>

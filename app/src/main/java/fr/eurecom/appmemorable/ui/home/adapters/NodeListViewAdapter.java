@@ -201,8 +201,10 @@ public class NodeListViewAdapter extends ArrayAdapter<ContentNode> {
                 Log.e("AudioNode", "File download success");
                 // Log.e("AudioNode", "initializeAudioNode : " + audioNode.getDuration());
 
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
+                Log.e("AudioNode", "File download failed: " + e.getMessage());
+                Log.e("AudioNode", "AudioURL: " + audioNode.getAudioUrl());
             }
         }).addOnFailureListener(exception -> {
             // Handle failed download

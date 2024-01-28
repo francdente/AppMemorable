@@ -97,6 +97,7 @@ public class FriendListViewAdapter extends ArrayAdapter<User> {
                 // Put the value as an extra in the Intent
                 intent.putExtra("albumKey", valueToPass);
                 intent.putExtra("albumName", album.getTitle());
+                intent.putExtra("albumOwner", album.getOwner().getUid());
 
                 // Start the SecondActivity
                 getContext().startActivity(intent);

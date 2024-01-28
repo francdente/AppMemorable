@@ -31,6 +31,7 @@ import fr.eurecom.appmemorable.NodesActivity;
 import fr.eurecom.appmemorable.R;
 import fr.eurecom.appmemorable.databinding.AlbumItemBinding;
 import fr.eurecom.appmemorable.models.Album;
+import fr.eurecom.appmemorable.models.ConcreteAlbum;
 import fr.eurecom.appmemorable.models.User;
 
 public class AlbumListViewAdapter extends ArrayAdapter<Album> {
@@ -41,6 +42,12 @@ public class AlbumListViewAdapter extends ArrayAdapter<Album> {
     private String dateFilter = "";
     private String userFilter = "";
     private boolean ownedFilter = false;
+
+    public void setFavoriteFilter(boolean favoriteFilter) {
+        this.favoriteFilter = favoriteFilter;
+    }
+
+    private boolean favoriteFilter = false;
     private boolean filterByTitle, filterByDate, filterByUser;
     private AlbumItemBinding albumItemBinding;
 
@@ -63,6 +70,18 @@ public class AlbumListViewAdapter extends ArrayAdapter<Album> {
         albumItemBinding = AlbumItemBinding.inflate(LayoutInflater.from(getContext()));
         albumItemBinding.textViewAlbumTitle.setText(album.getTitle());
         albumItemBinding.albumDate.setText(album.getTimeOfCreation());
+        if (album.isFavorite()) {
+            albumItemBinding.albumFavorite.setImageResource(R.drawable.star_svgrepo_com_fill);
+        } else {
+            albumItemBinding.albumFavorite.setImageResource(R.drawable.star_svgrepo_com);
+        }
+        //If owned set owned icon visible
+        if (album.getOwner().getUid().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
+            albumItemBinding.ownedIcon.setVisibility(View.VISIBLE);
+        } else {
+            albumItemBinding.ownedIcon.setVisibility(View.INVISIBLE);
+        }
+
 
         StorageReference storageRef = FirebaseStorage.getInstance().getReference().child("cover/" + album.getAlbumCoverUrl());
         if(storageRef != null) {
@@ -79,38 +98,31 @@ public class AlbumListViewAdapter extends ArrayAdapter<Album> {
 
         //Handle the open album button to start a new NodesActivity
         initOpenAlbumButton(album);
-        //Handle popup menu for editing/deleting the album
-        initPopupMenu(album);
+        //Handle deleting the album
+        initDeleteAlbumButton(album);
+        //
+        initFavoriteButton(album);
         convertView = albumItemBinding.getRoot();
         return convertView;
     }
 
-    private void initPopupMenu(Album album) {
-        ImageButton albumSettings = albumItemBinding.albumSettings;
-        String currUsr = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        if (!album.getOwner().getUid().equals(currUsr)) {
-            albumSettings.setVisibility(View.GONE);
-            return;
-        }
-        albumSettings.setOnClickListener(v -> {
-            PopupMenu popupMenu = new PopupMenu(getContext(), v);
-            popupMenu.inflate(R.menu.album_settings_menu); // Create a menu resource file (res/menu/album_settings_menu.xml)
-
-            // Handle menu item clicks
-            popupMenu.setOnMenuItemClickListener(item -> {
-                if (item.getItemId() == R.id.menu_item_edit) {
-                    return true;
-                } else if (item.getItemId() == R.id.menu_item_delete) {
-                    showDeleteConfirmationDialog(album);
-                    return true;
-                }
-                return false;
-            });
-
-            // Show the popup menu
-            popupMenu.show();
+    private void initFavoriteButton(Album album) {
+        albumItemBinding.albumFavorite.setOnClickListener(v -> {
+            album.setFavorite(!album.isFavorite());
+            notifyDataSetChanged();
+            //Upload in firebaseDatabase corresponding userAlbums (the idea is to have different values of favorites based on the user
+            FirebaseDatabase.getInstance().getReference("userAlbums/" + FirebaseAuth.getInstance().getCurrentUser().getUid() + "/" + album.getId()).setValue(new ConcreteAlbum(album));
+            Log.e("favorite", "userAlbums/" + FirebaseAuth.getInstance().getCurrentUser().getUid() + "/" + album.getId());
+            Log.e("favorite", album.isFavorite() + "");
         });
     }
+
+    private void initDeleteAlbumButton(Album album) {
+        albumItemBinding.albumDelete.setOnClickListener(v -> {
+            showDeleteConfirmationDialog(album);
+        });
+    }
+
     private void initOpenAlbumButton(Album album) {
         albumItemBinding.albumItem.setOnClickListener(v -> {
             String valueToPass = album.getId();
@@ -121,6 +133,7 @@ public class AlbumListViewAdapter extends ArrayAdapter<Album> {
             // Put the value as an extra in the Intent
             intent.putExtra("albumKey", valueToPass);
             intent.putExtra("albumName", album.getTitle());
+            intent.putExtra("albumOwner", album.getOwner().getUid());
 
             // Start the SecondActivity
             this.getContext().startActivity(intent);
@@ -135,7 +148,8 @@ public class AlbumListViewAdapter extends ArrayAdapter<Album> {
                 List<Album> filteredAlbums = new ArrayList<>();
                 for (Album album : mAlbums) {
                     if (album.getTitle().toLowerCase().contains(titleFilter.toString().toLowerCase()) &&
-                            (!ownedFilter || album.getOwner().getUid().equals(FirebaseAuth.getInstance().getCurrentUser().getUid()))) {
+                            (!ownedFilter || album.getOwner().getUid().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) &&
+                            (!favoriteFilter || album.isFavorite())) {
                         filteredAlbums.add(album);
                     }
                 }

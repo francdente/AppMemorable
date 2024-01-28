@@ -133,11 +133,11 @@ public class HomeFragment extends Fragment {
             if(filterShown){
                 binding.searchView.setVisibility(View.GONE);
                 binding.filteringOptions.setVisibility(View.GONE);
-                binding.filteringOptionsText.setVisibility(View.GONE);
+                //binding.filteringOptionsText.setVisibility(View.GONE);
             }else{
                 binding.searchView.setVisibility(View.VISIBLE);
                 binding.filteringOptions.setVisibility(View.VISIBLE);
-                binding.filteringOptionsText.setVisibility(View.VISIBLE);
+                //binding.filteringOptionsText.setVisibility(View.VISIBLE);
             }
             filterShown = !filterShown;
         });
@@ -145,6 +145,7 @@ public class HomeFragment extends Fragment {
     private void initFilterAlbum(){
         SearchView filterAlbum = binding.searchView;
         CheckBox ownedFilter = binding.ownedFilter;
+        CheckBox favoriteFilter = binding.favoriteFilter;
         Spinner sortSpinner = binding.spinnerSortBy;
 
         sortSpinner.setAdapter(new ArrayAdapter<>(this.getContext(), android.R.layout.simple_spinner_dropdown_item, new String[]{"Date", "Title"}));
@@ -174,6 +175,12 @@ public class HomeFragment extends Fragment {
             albumListViewAdapter.setOwnedFilter(isChecked);
             albumListViewAdapter.getFilter().filter("");
         });
+
+        favoriteFilter.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            albumListViewAdapter.setFavoriteFilter(isChecked);
+            albumListViewAdapter.getFilter().filter("");
+        });
+
         filterAlbum.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -215,7 +222,6 @@ public class HomeFragment extends Fragment {
         //Set adapter for the pager
         binding.listView.setAdapter(albumListViewAdapter);
     }
-
     private void initAddAlbumButton(){
         //Set on click listener to add a new album
         binding.addAlbumButton.setOnClickListener(v -> {
@@ -275,6 +281,10 @@ public class HomeFragment extends Fragment {
             });
 
             dialog.findViewById(R.id.btnInsert).setOnClickListener(v1 -> {
+                if (albumCover == null) {
+                    Toast.makeText(getContext(), "Please select an album cover", Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 String albumName = ((TextView)dialog.findViewById(R.id.editAlbumName)).getText().toString();
                 FirebaseUser usr = FirebaseAuth.getInstance().getCurrentUser();
                 //Add the current users to the selected users that will share the album

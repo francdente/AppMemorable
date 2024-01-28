@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.app.Dialog;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -24,12 +25,16 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.canhub.cropper.CropImage;
 import com.canhub.cropper.CropImageContract;
 import com.canhub.cropper.CropImageContractOptions;
@@ -54,37 +59,40 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.io.File;
+import java.util.stream.Collectors;
 
 import fr.eurecom.appmemorable.databinding.ActivityNodesBinding;
 import fr.eurecom.appmemorable.databinding.AddImageNodeBinding;
 import fr.eurecom.appmemorable.databinding.AddNodeBinding;
+import fr.eurecom.appmemorable.models.Album;
 import fr.eurecom.appmemorable.models.AudioNode;
+import fr.eurecom.appmemorable.models.ConcreteAlbum;
 import fr.eurecom.appmemorable.models.ConcreteNode;
 import fr.eurecom.appmemorable.models.ContentNode;
 import fr.eurecom.appmemorable.models.ImageNode;
 import fr.eurecom.appmemorable.models.TextNode;
 import fr.eurecom.appmemorable.models.User;
 import fr.eurecom.appmemorable.ui.home.adapters.NodeListViewAdapter;
+import fr.eurecom.appmemorable.ui.home.adapters.SelectedUsersAdapter;
 
 public class NodesActivity extends AppCompatActivity {
     ActivityNodesBinding binding;
     NodeListViewAdapter nodeListViewAdapter;
     private boolean mIsAllFabsVisible = false;
-    ActivityResultLauncher<Intent> activityResultLauncher;
-    ActivityResultLauncher<Intent> activityResultLauncherPhoto;
-
+    ActivityResultLauncher<Intent> activityResultLauncher, activityResultLauncherPhoto;
     MediaRecorder mediaRecorder;
     String audioFilePath;
     File audioFile = null;
 
-    Uri image;
-    Uri croppedImage;
+    Uri image, croppedImage;
     ImageView imageView;
+    String albumKey, albumName, owner;
 
     AddImageNodeBinding bindingImage;
 
@@ -95,82 +103,23 @@ public class NodesActivity extends AppCompatActivity {
         binding = ActivityNodesBinding.inflate(getLayoutInflater());
         bindingImage = AddImageNodeBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        String albumKey = getIntent().getStringExtra("albumKey");
-        String albumName = getIntent().getStringExtra("albumName");
+        albumKey = getIntent().getStringExtra("albumKey");
+        albumName = getIntent().getStringExtra("albumName");
+        owner = getIntent().getStringExtra("albumOwner");
+
         nodeListViewAdapter = new NodeListViewAdapter(this, new ArrayList<>());
         binding.albumNameText.setText(albumName);
 
-        ActivityResultLauncher<CropImageContractOptions> cropImage = registerForActivityResult(new CropImageContract(), result -> {
-            if (result.isSuccessful()) {
-                croppedImage = result.getUriContent();
-                imageView.setImageURI(croppedImage);
-                imageView.setVisibility(View.VISIBLE);
-            }
+        initActivityResultLaunchers();
 
-        });
+        if (owner.equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
+            binding.editAlbumIcon.setVisibility(View.VISIBLE);
+            initEditAlbumButton();
+        } else {
+            binding.editAlbumIcon.setVisibility(View.INVISIBLE);
+        }
 
-
-        activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
-            @Override
-            public void onActivityResult(ActivityResult result) {
-                if(result.getResultCode() == RESULT_OK){
-                    if(result.getData() != null){
-                        image = result.getData().getData();
-
-                        bindingImage.cropImageView.setImageUriAsync(image);
-
-                        CropImageOptions cropImageOptions = new CropImageOptions();
-                        cropImageOptions.imageSourceIncludeGallery = false;
-                        cropImageOptions.imageSourceIncludeCamera = true;
-                        cropImageOptions.cropShape = CropImageView.CropShape.RECTANGLE;
-                        int fixedCropSizeInDp = 350;
-                        int fixedCropSizeInPixels = (int) (fixedCropSizeInDp * getResources().getDisplayMetrics().density);
-                        cropImageOptions.fixAspectRatio = true;
-                        cropImageOptions.aspectRatioX = cropImageOptions.aspectRatioY = fixedCropSizeInPixels;
-
-                        CropImageContractOptions cropImageContractOptions = new CropImageContractOptions(image, cropImageOptions);
-                        cropImage.launch(cropImageContractOptions);
-
-
-
-                        //Toast.makeText(NodesActivity.this, "Image Added", Toast.LENGTH_SHORT).show();
-                    }
-                }
-
-            }
-        });
-
-        activityResultLauncherPhoto = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
-            @Override
-            public void onActivityResult(ActivityResult result) {
-                if(result.getResultCode() == RESULT_OK){
-                    if(result.getData() != null){
-                        image = result.getData().getData();
-
-                        bindingImage.cropImageView.setImageUriAsync(image);
-
-                        CropImageOptions cropImageOptions = new CropImageOptions();
-                        cropImageOptions.imageSourceIncludeGallery = false;
-                        cropImageOptions.imageSourceIncludeCamera = true;
-                        cropImageOptions.cropShape = CropImageView.CropShape.RECTANGLE;
-                        int fixedCropSizeInDp = 350;
-                        int fixedCropSizeInPixels = (int) (fixedCropSizeInDp * getResources().getDisplayMetrics().density);
-                        cropImageOptions.fixAspectRatio = true;
-                        cropImageOptions.aspectRatioX = cropImageOptions.aspectRatioY = fixedCropSizeInPixels;
-
-                        CropImageContractOptions cropImageContractOptions = new CropImageContractOptions(image, cropImageOptions);
-                        cropImage.launch(cropImageContractOptions);
-
-
-
-                        //Toast.makeText(NodesActivity.this, "Image Added", Toast.LENGTH_SHORT).show();
-                    }
-                }
-
-            }
-        });
-
-        FirebaseDatabase.getInstance().getReference("albums/"+albumKey).addValueEventListener(new ValueEventListener() {
+        FirebaseDatabase.getInstance().getReference("albums/" + albumKey).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 List<ContentNode> nodes = new ArrayList<>();
@@ -199,6 +148,209 @@ public class NodesActivity extends AppCompatActivity {
         });
         binding.nodesListView.setAdapter(nodeListViewAdapter);
         setFloatingButton(binding.getRoot(), albumKey);
+    }
+
+    private void initActivityResultLaunchers() {
+        ActivityResultLauncher<CropImageContractOptions> cropImage = registerForActivityResult(new CropImageContract(), result -> {
+            if (result.isSuccessful()) {
+                croppedImage = result.getUriContent();
+                imageView.setImageURI(croppedImage);
+                imageView.setVisibility(View.VISIBLE);
+            }
+
+        });
+
+
+        activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
+            @Override
+            public void onActivityResult(ActivityResult result) {
+                if (result.getResultCode() == RESULT_OK) {
+                    if (result.getData() != null) {
+                        image = result.getData().getData();
+
+                        bindingImage.cropImageView.setImageUriAsync(image);
+
+                        CropImageOptions cropImageOptions = new CropImageOptions();
+                        cropImageOptions.imageSourceIncludeGallery = false;
+                        cropImageOptions.imageSourceIncludeCamera = true;
+                        cropImageOptions.cropShape = CropImageView.CropShape.RECTANGLE;
+                        int fixedCropSizeInDp = 350;
+                        int fixedCropSizeInPixels = (int) (fixedCropSizeInDp * getResources().getDisplayMetrics().density);
+                        cropImageOptions.fixAspectRatio = true;
+                        cropImageOptions.aspectRatioX = cropImageOptions.aspectRatioY = fixedCropSizeInPixels;
+
+                        CropImageContractOptions cropImageContractOptions = new CropImageContractOptions(image, cropImageOptions);
+                        cropImage.launch(cropImageContractOptions);
+
+
+                        //Toast.makeText(NodesActivity.this, "Image Added", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+            }
+        });
+
+        activityResultLauncherPhoto = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
+            @Override
+            public void onActivityResult(ActivityResult result) {
+                if (result.getResultCode() == RESULT_OK) {
+                    if (result.getData() != null) {
+                        image = result.getData().getData();
+
+                        bindingImage.cropImageView.setImageUriAsync(image);
+
+                        CropImageOptions cropImageOptions = new CropImageOptions();
+                        cropImageOptions.imageSourceIncludeGallery = false;
+                        cropImageOptions.imageSourceIncludeCamera = true;
+                        cropImageOptions.cropShape = CropImageView.CropShape.RECTANGLE;
+                        int fixedCropSizeInDp = 350;
+                        int fixedCropSizeInPixels = (int) (fixedCropSizeInDp * getResources().getDisplayMetrics().density);
+                        cropImageOptions.fixAspectRatio = true;
+                        cropImageOptions.aspectRatioX = cropImageOptions.aspectRatioY = fixedCropSizeInPixels;
+
+                        CropImageContractOptions cropImageContractOptions = new CropImageContractOptions(image, cropImageOptions);
+                        cropImage.launch(cropImageContractOptions);
+
+
+                        //Toast.makeText(NodesActivity.this, "Image Added", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+            }
+        });
+    }
+
+    private void initEditAlbumButton() {
+        imageView = findViewById(R.id.imageView);
+        binding.editAlbumIcon.setOnClickListener(v -> {
+            Dialog dialog = new Dialog(this);
+            dialog.setContentView(R.layout.edit_album);
+            dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            dialog.setCancelable(true);
+            dialog.getWindow().getAttributes().windowAnimations = R.style.dialog_animation;
+
+            AutoCompleteTextView autoCompleteTextView = dialog.findViewById(R.id.autoCompleteTextView);
+            ListView listView = dialog.findViewById(R.id.listView);
+
+            // Create adapter and set it to AutoCompleteTextView
+            ArrayAdapter<User> dropDownAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, new ArrayList<>());
+            autoCompleteTextView.setAdapter(dropDownAdapter);
+            // Set threshold to start showing suggestions after a certain number of characters
+            autoCompleteTextView.setThreshold(1);
+
+            //Create adapter for the selected users
+            ArrayList<User> selectedUsers = new ArrayList<>();
+            SelectedUsersAdapter userListAdapter = new SelectedUsersAdapter(this, selectedUsers, dropDownAdapter);
+            listView.setAdapter(userListAdapter);
+
+            FirebaseDatabase.getInstance().getReference("userAlbums/" + FirebaseAuth.getInstance().getCurrentUser().getUid() + "/" + albumKey).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    Album album = snapshot.getValue(ConcreteAlbum.class).IntoAlbum();
+                    ((TextView) dialog.findViewById(R.id.editAlbumName)).setText(album.getTitle());
+                    selectedUsers.clear();
+                    selectedUsers.addAll(album.getUsers().stream().filter(user -> !user.getEmail().equals(FirebaseAuth.getInstance().getCurrentUser().getEmail())).collect(Collectors.toList()));
+                    userListAdapter.notifyDataSetChanged();
+
+                    //Enable the edit button when when we have consistent data with the firebase db
+                    dialog.findViewById(R.id.btnInsert).setEnabled(true);
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
+
+            FirebaseDatabase.getInstance().getReference("friends/" + FirebaseAuth.getInstance().getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    List<User> newUsers = new ArrayList<>();
+                    // Check if snapshot exists and has children
+                    if (snapshot.exists() && snapshot.hasChildren()) {
+                        for (DataSnapshot userSnapshot : snapshot.getChildren()) {
+                            User user = userSnapshot.getValue(User.class);
+                            if (user != null) {
+                                newUsers.add(user);
+                            }
+                        }
+                    }
+                    dropDownAdapter.clear();
+                    //TODO: fix this
+                    dropDownAdapter.addAll(newUsers.stream().filter(user -> !user.getEmail().equals(FirebaseAuth.getInstance().getCurrentUser().getEmail())).collect(Collectors.toList()));
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
+
+            // Handle item click in the AutoCompleteTextView
+            autoCompleteTextView.setOnItemClickListener((parent, v1, p, id) -> {
+                User selectedUser = (User) parent.getItemAtPosition(p);
+                autoCompleteTextView.setText(""); // Clear the AutoCompleteTextView
+                selectedUsers.add(selectedUser);
+                dropDownAdapter.remove(selectedUser);
+                dropDownAdapter.notifyDataSetChanged();
+                userListAdapter.notifyDataSetChanged();
+            });
+
+            dialog.findViewById(R.id.btnInsert).setOnClickListener(v1 -> {
+                String albumName = ((TextView) dialog.findViewById(R.id.editAlbumName)).getText().toString();
+                FirebaseUser usr = FirebaseAuth.getInstance().getCurrentUser();
+                //Add the current users to the selected users that will share the album
+                User owner = new User(usr.getEmail(), usr.getDisplayName(), usr.getUid());
+                selectedUsers.add(owner);
+                String albumCoverUrl = UUID.randomUUID().toString();
+                Album newAlbum = new Album(albumName, new HashMap<>(), selectedUsers, LocalDateTime.now(), owner, albumCoverUrl);
+                this.editAlbum(newAlbum, selectedUsers);
+                //this.addAlbum(newAlbum, selectedUsers);
+                dialog.dismiss();
+            });
+            dialog.findViewById(R.id.btnCancel).setOnClickListener(v1 -> {
+                dialog.dismiss();
+            });
+
+            dialog.show();
+        });
+    }
+
+    private void editAlbum(Album album, List<User> users) {
+        FirebaseDatabase.getInstance().getReference("userAlbums/" + FirebaseAuth.getInstance().getCurrentUser().getUid() + "/" + albumKey).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                Album curr_album = snapshot.getValue(ConcreteAlbum.class).IntoAlbum();
+                deleteAlbumSoft(curr_album);
+                DatabaseReference userAlbums = FirebaseDatabase.getInstance().getReference("userAlbums");
+                Log.e("editAlbum", "editAlbum: " + album.getId());
+                Log.e("users", "editAlbum: " + users.size());
+                album.setId(curr_album.getId());
+                album.setAlbumCoverUrl(curr_album.getAlbumCoverUrl());
+                DatabaseReference first_ref = userAlbums.child(users.get(0).getUid()).child(album.getId());
+                first_ref.setValue(new ConcreteAlbum(album));
+                for (int i = 1; i < users.size(); i++) {
+                    DatabaseReference ref = userAlbums.child(users.get(i).getUid()).child(album.getId());
+                    ref.setValue(new ConcreteAlbum(album));
+                }
+                //TODO: THIS IS REALLY BAD TO DO
+                binding.albumNameText.setText(album.getTitle());
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
+    private void deleteAlbumSoft(Album album) {
+        //Delete from userAlbums
+        for (User usr : album.getUsers()) {
+            String path = "userAlbums/" + usr.getUid() + "/" + album.getId();
+            Log.e("deleteUserAlbums", path);
+            FirebaseDatabase.getInstance().getReference(path).removeValue();
+        }
     }
 
     private void setFloatingButton(View view, String albumKey) {
@@ -252,16 +404,16 @@ public class NodesActivity extends AppCompatActivity {
                     chronometerRecording.setText("00:00");
                     String audioUrl = UUID.randomUUID().toString();
                     audioFilePath = getExternalCacheDir().getAbsolutePath() + audioUrl;
-                    Log.e("NodesActivity", "audiofilePath: "+audioFilePath);
+                    Log.e("NodesActivity", "audiofilePath: " + audioFilePath);
                     final String[] duration = {null};
 
                     btnInsert.setOnClickListener(v1 -> {
-                        if(audioFile != null){
+                        if (audioFile != null) {
 
 
-                            String text = ((TextView)dialog.findViewById(R.id.editText)).getText().toString();
+                            String text = ((TextView) dialog.findViewById(R.id.editText)).getText().toString();
                             StorageReference storageRef = FirebaseStorage.getInstance().getReference();
-                            StorageReference audioRef = storageRef.child(""+albumKey+"/"+audioUrl);
+                            StorageReference audioRef = storageRef.child("" + albumKey + "/" + audioUrl);
                             binding.progressBar.setVisibility(View.VISIBLE);
 
                             audioRef.putFile(Uri.fromFile(audioFile)).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
@@ -270,7 +422,7 @@ public class NodesActivity extends AppCompatActivity {
 
                                     NodesActivity.this.addNodeToAlbum(new AudioNode(albumKey, LocalDateTime.now().toString(), null, text, audioUrl, duration[0]), albumKey);
                                     binding.progressBar.setVisibility(View.GONE);
-                                    Toast.makeText(NodesActivity.this,"Audio added", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(NodesActivity.this, "Audio added", Toast.LENGTH_SHORT).show();
                                 }
                             }).addOnFailureListener(new OnFailureListener() {
                                 @Override
@@ -281,7 +433,7 @@ public class NodesActivity extends AppCompatActivity {
                             });
 
                             dialog.dismiss();
-                        }else{
+                        } else {
                             Toast.makeText(NodesActivity.this, "No audio source to insert!", Toast.LENGTH_SHORT).show();
                         }
 
@@ -312,7 +464,7 @@ public class NodesActivity extends AppCompatActivity {
                         // You can stop recording audio here
                         stopRecording();
                         chronometerRecording.stop();
-                        long elapsedSeconds = (SystemClock.elapsedRealtime() - chronometerRecording.getBase())/ 1000;
+                        long elapsedSeconds = (SystemClock.elapsedRealtime() - chronometerRecording.getBase()) / 1000;
                         String time = String.format(Locale.getDefault(), "%02d:%02d", (elapsedSeconds % 3600) / 60, elapsedSeconds % 60);
                         duration[0] = time;
 
@@ -359,7 +511,7 @@ public class NodesActivity extends AppCompatActivity {
 
                     btnInsert.setOnClickListener(v1 -> {
 
-                        if(croppedImage!=null) {
+                        if (croppedImage != null) {
 
                             dialog.dismiss();
                             binding.progressBar.setVisibility(View.VISIBLE);
@@ -390,8 +542,7 @@ public class NodesActivity extends AppCompatActivity {
                                 }
                             });
 
-                        }
-                        else {
+                        } else {
                             Toast.makeText(NodesActivity.this, "Please select an image!", Toast.LENGTH_SHORT).show();
                         }
 
@@ -430,7 +581,7 @@ public class NodesActivity extends AppCompatActivity {
                     dialog.getWindow().getAttributes().windowAnimations = R.style.dialog_animation;
                     dialog.findViewById(R.id.btnInsert).setOnClickListener(v1 -> {
                         binding.progressBar.setVisibility(View.VISIBLE);
-                        String text = ((TextView)dialog.findViewById(R.id.editText)).getText().toString();
+                        String text = ((TextView) dialog.findViewById(R.id.editText)).getText().toString();
                         this.addNodeToAlbum(new TextNode(albumKey, LocalDateTime.now().toString(), null, text), albumKey);
                         dialog.dismiss();
                         binding.progressBar.setVisibility(View.GONE);
@@ -461,7 +612,7 @@ public class NodesActivity extends AppCompatActivity {
 
                     btnInsert.setOnClickListener(v1 -> {
 
-                        if(croppedImage!=null) {
+                        if (croppedImage != null) {
 
                             dialog.dismiss();
                             binding.progressBar.setVisibility(View.VISIBLE);
@@ -504,8 +655,7 @@ public class NodesActivity extends AppCompatActivity {
                                 }
                             });
 
-                        }
-                        else {
+                        } else {
                             Toast.makeText(NodesActivity.this, "Please take a photo!", Toast.LENGTH_SHORT).show();
                         }
 
@@ -531,8 +681,8 @@ public class NodesActivity extends AppCompatActivity {
     }
 
     private void addNodeToAlbum(ContentNode node, String albumKey) {
-        DatabaseReference nodes = FirebaseDatabase.getInstance().getReference("albums/"+albumKey);
-        Log.e("ViewPagerAdapter", "addNodeToAlbum: "+albumKey);
+        DatabaseReference nodes = FirebaseDatabase.getInstance().getReference("albums/" + albumKey);
+        Log.e("ViewPagerAdapter", "addNodeToAlbum: " + albumKey);
         String key = nodes.push().getKey();
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         node.setUser(new User(user.getEmail(), user.getDisplayName(), user.getUid()));
@@ -568,15 +718,16 @@ public class NodesActivity extends AppCompatActivity {
 
     private void deleteRecording() {
 
-        mediaRecorder.stop();
-        mediaRecorder.release();
+        if (mediaRecorder!=null){
+            mediaRecorder.stop();
+            mediaRecorder.release();
+        }
         mediaRecorder = null;
 
         if (audioFile != null) {
             audioFile = null;
         }
     }
-
 
 
 }
