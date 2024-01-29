@@ -8,6 +8,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
 
 import android.app.Dialog;
 import android.content.ContentResolver;
@@ -57,8 +58,10 @@ import com.google.firebase.storage.UploadTask;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -195,7 +198,7 @@ public class NodesActivity extends AppCompatActivity {
             public void onActivityResult(ActivityResult result) {
                 if (result.getResultCode() == RESULT_OK) {
                     if (result.getData() != null) {
-                        image = result.getData().getData();
+                        //image = result.getData().getData();
 
                         bindingImage.cropImageView.setImageUriAsync(image);
 
@@ -207,9 +210,12 @@ public class NodesActivity extends AppCompatActivity {
                         int fixedCropSizeInPixels = (int) (fixedCropSizeInDp * getResources().getDisplayMetrics().density);
                         cropImageOptions.fixAspectRatio = true;
                         cropImageOptions.aspectRatioX = cropImageOptions.aspectRatioY = fixedCropSizeInPixels;
-
+                        File f = new File(currentPhotoPath);
+                        image = Uri.fromFile(f);
                         CropImageContractOptions cropImageContractOptions = new CropImageContractOptions(image, cropImageOptions);
                         cropImage.launch(cropImageContractOptions);
+
+
 
 
                         //Toast.makeText(NodesActivity.this, "Image Added", Toast.LENGTH_SHORT).show();
@@ -668,7 +674,27 @@ public class NodesActivity extends AppCompatActivity {
 
                     btnAddImage.setOnClickListener(v1 -> {
 
-                        activityResultLauncherPhoto.launch(new Intent(MediaStore.ACTION_IMAGE_CAPTURE));
+                        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                        // Ensure that there's a camera activity to handle the intent
+                        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+                            // Create the File where the photo should go
+                            File photoFile = null;
+                            try {
+                                photoFile = createImageFile();
+                            } catch (IOException ex) {
+                                // Error occurred while creating the File
+                            }
+                            // Continue only if the File was successfully created
+                            if (photoFile != null) {
+                                Uri photoURI = FileProvider.getUriForFile(this,
+                                        "com.example.android.fileprovider",
+                                        photoFile);
+                                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                                activityResultLauncherPhoto.launch(takePictureIntent);
+                            }
+                        }
+
+                        //activityResultLauncherPhoto.launch(new Intent(MediaStore.ACTION_IMAGE_CAPTURE));
 
                     });
 
@@ -728,6 +754,24 @@ public class NodesActivity extends AppCompatActivity {
         if (audioFile != null) {
             audioFile = null;
         }
+    }
+
+    String currentPhotoPath;
+
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+
+        // Save a file: path for use with ACTION_VIEW intents
+        currentPhotoPath = image.getAbsolutePath();
+        return image;
     }
 
 
