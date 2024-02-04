@@ -196,30 +196,28 @@ public class NodesActivity extends AppCompatActivity {
         activityResultLauncherPhoto = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
             @Override
             public void onActivityResult(ActivityResult result) {
+                Log.e("NodesActivity", "onActivityResult1: " + result);
                 if (result.getResultCode() == RESULT_OK) {
-                    if (result.getData() != null) {
-                        //image = result.getData().getData();
+                    //image = result.getData().getData();
+                    Log.e("NodesActivity", "onActivityResult: " + currentPhotoPath);
+                    File f = new File(currentPhotoPath);
+                    image = Uri.fromFile(f);
 
-                        bindingImage.cropImageView.setImageUriAsync(image);
+                    bindingImage.cropImageView.setImageUriAsync(image);
 
-                        CropImageOptions cropImageOptions = new CropImageOptions();
-                        cropImageOptions.imageSourceIncludeGallery = false;
-                        cropImageOptions.imageSourceIncludeCamera = true;
-                        cropImageOptions.cropShape = CropImageView.CropShape.RECTANGLE;
-                        int fixedCropSizeInDp = 350;
-                        int fixedCropSizeInPixels = (int) (fixedCropSizeInDp * getResources().getDisplayMetrics().density);
-                        cropImageOptions.fixAspectRatio = true;
-                        cropImageOptions.aspectRatioX = cropImageOptions.aspectRatioY = fixedCropSizeInPixels;
-                        File f = new File(currentPhotoPath);
-                        image = Uri.fromFile(f);
-                        CropImageContractOptions cropImageContractOptions = new CropImageContractOptions(image, cropImageOptions);
-                        cropImage.launch(cropImageContractOptions);
+                    CropImageOptions cropImageOptions = new CropImageOptions();
+                    cropImageOptions.imageSourceIncludeGallery = false;
+                    cropImageOptions.imageSourceIncludeCamera = true;
+                    cropImageOptions.cropShape = CropImageView.CropShape.RECTANGLE;
+                    int fixedCropSizeInDp = 350;
+                    int fixedCropSizeInPixels = (int) (fixedCropSizeInDp * getResources().getDisplayMetrics().density);
+                    cropImageOptions.fixAspectRatio = true;
+                    cropImageOptions.aspectRatioX = cropImageOptions.aspectRatioY = fixedCropSizeInPixels;
+                    CropImageContractOptions cropImageContractOptions = new CropImageContractOptions(image, cropImageOptions);
+                    cropImage.launch(cropImageContractOptions);
 
+                    //Toast.makeText(NodesActivity.this, "Image Added", Toast.LENGTH_SHORT).show();
 
-
-
-                        //Toast.makeText(NodesActivity.this, "Image Added", Toast.LENGTH_SHORT).show();
-                    }
                 }
 
             }

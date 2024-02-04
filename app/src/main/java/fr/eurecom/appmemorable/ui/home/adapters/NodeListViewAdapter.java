@@ -233,6 +233,24 @@ public class NodeListViewAdapter extends ArrayAdapter<ContentNode> {
                 popupMenu.show();
                 return false;
             });
+            audioNodeBinding.layoutTextNode.setOnLongClickListener(v1 -> {
+                PopupMenu popupMenu = new PopupMenu(getContext(), v1);
+                popupMenu.inflate(R.menu.album_settings_menu); // Create a menu resource file (res/menu/album_settings_menu.xml)
+                // Handle menu item clicks
+                popupMenu.setOnMenuItemClickListener(item -> {
+                    if (item.getItemId() == R.id.menu_item_edit) {
+                        return true;
+                    } else if (item.getItemId() == R.id.menu_item_delete) {
+                        showDeleteConfirmationDialog(audioNode.getAlbum(), audioNode);
+                        return true;
+                    }
+                    return false;
+                });
+
+                // Show the popup menu
+                popupMenu.show();
+                return false;
+            });
         }
     }
 

@@ -84,11 +84,12 @@ public class Album {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("'Today at' hh:mm a");
             return dateTimestamp.format(formatter);
         }
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy 'at' hh:mm a");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy");
 
         // Format the date
         String formattedDate = dateTimestamp.format(formatter);
         formattedDate = capitalizeMonth(formattedDate);
+        formattedDate = "Created on " + formattedDate;
         return formattedDate;
     }
 
